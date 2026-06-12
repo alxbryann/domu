@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Inter:wght@400;500;600;700;900&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --app-bg: #F7FAFF;
+  --app-sidebar: #FFFFFF;
+  --app-card: #FFFFFF;
+  --app-text: #08144F;
+  --app-text-secondary: #646E95;
+  --app-text-muted: #A2A9C5;
+  --app-border: rgba(8, 20, 79, 0.1);
+  --app-hover: rgba(8, 20, 79, 0.04);
+  --app-input: #FFFFFF;
+  --app-nav-active-bg: rgba(1, 69, 242, 0.08);
+  --app-transcript-agent: rgba(1, 69, 242, 0.08);
+  --app-transcript-customer: rgba(8, 20, 79, 0.04);
+  --app-highlight: rgba(239, 68, 68, 0.08);
+}
+
+.dark {
+  --app-bg: #0B0B0D;
+  --app-sidebar: #0E0E10;
+  --app-card: #141416;
+  --app-text: #FFFFFF;
+  --app-text-secondary: rgba(255, 255, 255, 0.7);
+  --app-text-muted: rgba(255, 255, 255, 0.5);
+  --app-border: rgba(255, 255, 255, 0.1);
+  --app-hover: rgba(255, 255, 255, 0.05);
+  --app-input: rgba(255, 255, 255, 0.05);
+  --app-nav-active-bg: rgba(1, 69, 242, 0.15);
+  --app-transcript-agent: rgba(1, 69, 242, 0.15);
+  --app-transcript-customer: rgba(255, 255, 255, 0.05);
+  --app-highlight: rgba(239, 68, 68, 0.12);
+}
+
+@theme {
+  /* Brand */
+  --color-domu-navy: #08144F;
+  --color-domu-blue: #0145F2;
+  --color-domu-blue-hover: #0034B8;
+  --color-domu-blue-deep: #0021A4;
+  --color-domu-blue-soft: #EFF4FF;
+  --color-domu-blue-lighter: #F7FAFF;
+  --color-domu-blue-tint: #EBF0FE;
+  --color-domu-blue-border: #E1EAFD;
+  --color-domu-periwinkle: #AEB2EB;
+  --color-domu-lavender: #9A9FE3;
+
+  /* Surfaces (legacy) */
+  --color-domu-white: #FFFFFF;
+  --color-domu-dashboard: #0B0B0D;
+  --color-domu-dashboard-card: #141416;
+  --color-domu-dashboard-sidebar: #0E0E10;
+
+  /* Semantic app tokens (theme-aware) */
+  --color-app-bg: var(--app-bg);
+  --color-app-sidebar: var(--app-sidebar);
+  --color-app-card: var(--app-card);
+  --color-app-text: var(--app-text);
+  --color-app-text-secondary: var(--app-text-secondary);
+  --color-app-text-muted: var(--app-text-muted);
+  --color-app-border: var(--app-border);
+  --color-app-hover: var(--app-hover);
+  --color-app-input: var(--app-input);
+
+  /* Text */
+  --color-domu-text: #08144F;
+  --color-domu-text-secondary: #646E95;
+  --color-domu-text-muted: #A2A9C5;
+  --color-domu-text-nav: #414970;
+
+  /* Status */
+  --color-domu-success: #00AD7D;
+  --color-domu-warning: #F59E0B;
+  --color-domu-danger: #EF4444;
+  --color-domu-info: #00A1E0;
+
+  /* Fonts */
+  --font-sans: "Inter", "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: "Fragment Mono", ui-monospace, monospace;
+
+  /* Radius */
+  --radius-domu-sm: 4px;
+  --radius-domu-md: 8px;
+  --radius-domu-lg: 12px;
+  --radius-domu-xl: 16px;
+  --radius-domu-pill: 9999px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--app-text);
+  background: var(--app-bg);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.domu-hero-grid {
+  background-color: var(--color-domu-navy);
+  background-image:
+    linear-gradient(135deg, rgba(1, 69, 242, 0.08) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(1, 69, 242, 0.08) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(1, 69, 242, 0.05) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(1, 69, 242, 0.05) 25%, transparent 25%);
+  background-size: 80px 80px;
+  background-position: 0 0, 0 40px, 40px -40px, -40px 0;
+}
+
+.domu-hero-glow::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: 10%;
+  width: 50%;
+  height: 60%;
+  background: radial-gradient(ellipse, rgba(1, 69, 242, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
