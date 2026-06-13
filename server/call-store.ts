@@ -217,21 +217,33 @@ export async function ensureCallRecording(callId: string): Promise<Transcript | 
   return updated
 }
 
-export async function ingestCallEvent(payload: CallWebhookPayload): Promise<{
+export type IngestProgress = {
+  step: 'save' | 'recording' | 'primary' | 'secondary' | 'rules' | 'finalize'
+  status: 'start' | 'done'
+}
+
+export async function ingestCallEvent(
+  payload: CallWebhookPayload,
+  onProgress?: (event: IngestProgress) => void,
+): Promise<{
   transcript: Transcript
   result: EvalResult | null
 }> {
+  onProgress?.({ step: 'save', status: 'start' })
   const existing = await loadTranscript(payload.call.id)
   let transcript = buildTranscript(payload, existing ?? undefined)
   transcript = await applyEscalationAlerts(existing, transcript)
   await saveTranscript(transcript)
+  onProgress?.({ step: 'save', status: 'done' })
 
   if (payload.event !== 'call.ended') {
     return { transcript, result: await loadResult(transcript.id) }
   }
 
+  onProgress?.({ step: 'recording', status: 'start' })
   transcript = await persistCallRecording(transcript)
   await saveTranscript(transcript)
+  onProgress?.({ step: 'recording', status: 'done' })
 
   if (!transcript.metadata.recordingStoragePath && transcript.source === 'vapi') {
     scheduleRecordingBackfill(transcript.id)
@@ -243,7 +255,14 @@ export async function ingestCallEvent(payload: CallWebhookPayload): Promise<{
     return { transcript: completed, result: null }
   }
 
-  const result = await evaluateTranscript(transcript)
+  const result = await evaluateTranscript(transcript, undefined, (event) => {
+    if (event.phase === 'rules') {
+      if (event.status === 'start') onProgress?.({ step: 'finalize', status: 'start' })
+      if (event.status === 'done') onProgress?.({ step: 'finalize', status: 'done' })
+      return
+    }
+    onProgress?.({ step: event.phase, status: event.status })
+  })
   await saveResult(result)
 
   const completed: Transcript = { ...transcript, status: 'completed' }

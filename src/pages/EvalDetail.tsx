@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { AcceptanceProfileEditor } from '../components/AcceptanceProfileEditor'
+import { ProcessingTimeline } from '../components/ProcessingTimeline'
 import { Badge } from '../design-system/components/Badge'
 import { Button } from '../design-system/components/Button'
 import { ScoreRing } from '../design-system/components/ScoreRing'
@@ -10,6 +11,7 @@ import { ComplianceAlert } from '../design-system/components/ComplianceAlert'
 import { SectionLabel } from '../design-system/components/SectionLabel'
 import { EvalDetailSkeleton } from '../design-system/components/EvalDetailSkeleton'
 import { api } from '../lib/api'
+import { useVapiCall } from '../context/VapiCallContext'
 import { downloadCallReport } from '../lib/call-report'
 import type { CallStatus, EvalResult, Transcript } from '../types'
 import {
@@ -25,6 +27,7 @@ const STATUS_LABEL: Record<CallStatus, string> = {
 
 export function EvalDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const { evalSteps, finalizingCallId } = useVapiCall()
   const [call, setCall] = useState<Transcript | null>(null)
   const [result, setResult] = useState<EvalResult | null>(null)
   const [error, setError] = useState('')
@@ -48,9 +51,10 @@ export function EvalDetailPage() {
     }
 
     load()
-    const interval = setInterval(load, 5000)
+    const pollMs = finalizingCallId === id ? 1000 : 5000
+    const interval = setInterval(load, pollMs)
     return () => clearInterval(interval)
-  }, [id, profileDirty])
+  }, [id, profileDirty, finalizingCallId])
 
   useEffect(() => {
     if (!id || !call?.metadata.recordingStoragePath) {
@@ -94,6 +98,9 @@ export function EvalDetailPage() {
 
   if (error) return <div className="p-8 text-domu-danger">{error}</div>
   if (!call) return <EvalDetailSkeleton />
+
+  const isFinalizingThisCall = finalizingCallId === id && evalSteps.length > 0
+  const showEvalTimeline = call.status === 'evaluating' || isFinalizingThisCall
 
   const allQuotes = [
     ...(result?.flaggedQuotes ?? []),
@@ -157,7 +164,7 @@ export function EvalDetailPage() {
         </div>
       </div>
 
-      {call.status === 'live' && (
+      {call.status === 'live' && !isFinalizingThisCall && (
         <div className="space-y-3">
           <ComplianceAlert
             variant="warning"
@@ -173,12 +180,24 @@ export function EvalDetailPage() {
         </div>
       )}
 
-      {call.status === 'evaluating' && (
-        <ComplianceAlert
-          variant="warning"
-          title="Evaluating call"
-          message="The LLM judge is scoring this call. Results will appear shortly."
-        />
+      {showEvalTimeline && (
+        <div className="rounded-domu-lg bg-app-card border border-domu-blue/30 p-5 space-y-3">
+          <div>
+            <p className="text-sm font-semibold text-app-text">Evaluando la llamada</p>
+            <p className="text-xs text-app-muted mt-1">
+              Guardando la transcripción, procesando la grabación y calificando con el juez LLM.
+            </p>
+          </div>
+          {isFinalizingThisCall ? (
+            <ProcessingTimeline steps={evalSteps} />
+          ) : (
+            <ComplianceAlert
+              variant="warning"
+              title="Evaluating call"
+              message="The LLM judge is scoring this call. Results will appear shortly."
+            />
+          )}
+        </div>
       )}
 
       {result?.judgeDisagreement && (

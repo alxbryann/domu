@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../lib/api'
+import { api, type SyncStreamEvent } from '../lib/api'
 import {
   computeLiveMonitor,
   createLiveMonitorMetrics,
@@ -19,6 +19,7 @@ import {
 import { getVapiClient, isValidCallId } from '../lib/vapi-session'
 import type { VapiClient } from '../lib/vapi-client'
 import type { AssistantOverrides } from '@vapi-ai/web/dist/api'
+import type { ProcessingStep } from '../components/ProcessingTimeline'
 import type { TranscriptTurn } from '../types'
 import type { CallAcceptanceProfile } from '../../shared/acceptance-profile'
 import {
@@ -116,6 +117,8 @@ interface VapiCallContextValue {
   isChatMode: boolean
   acceptanceProfile: CallAcceptanceProfile
   profileSaving: boolean
+  evalSteps: ProcessingStep[]
+  finalizingCallId: string | null
   startCall: () => Promise<void>
   endCall: () => void
   startTalking: () => void
@@ -149,6 +152,8 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
     () => loadStoredProfile(),
   )
   const [profileSaving, setProfileSaving] = useState(false)
+  const [evalSteps, setEvalSteps] = useState<ProcessingStep[]>([])
+  const [finalizingCallId, setFinalizingCallId] = useState<string | null>(null)
 
   const vapiRef = useRef<VapiClient | null>(null)
   const acceptanceProfileRef = useRef(acceptanceProfile)
@@ -169,8 +174,47 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
       .catch((e) => setConfigError(e instanceof Error ? e.message : 'Failed to load Vapi config'))
   }, [])
 
+  const applyEvalStreamEvent = useCallback((event: SyncStreamEvent) => {
+    if (event.type === 'plan') {
+      setEvalSteps(event.steps.map((s) => ({ ...s, status: 'pending' as const })))
+    } else if (event.type === 'step') {
+      setEvalSteps((prev) =>
+        prev.map((s) =>
+          s.id === event.id
+            ? { ...s, status: event.status === 'done' ? 'done' : 'active' }
+            : s,
+        ),
+      )
+    }
+  }, [])
+
+  const syncEndedCall = useCallback(async () => {
+    const id = callIdRef.current
+    if (!id) return
+
+    await api.syncCallStream(
+      {
+        event: 'call.ended',
+        call: {
+          id,
+          source: 'vapi',
+          agentVersion: assistantIdRef.current ?? undefined,
+          startedAt: startedAtRef.current ?? undefined,
+          endedAt: new Date().toISOString(),
+          callType: 'web',
+          acceptanceProfile: acceptanceProfileRef.current,
+          messages: messagesRef.current,
+        },
+      },
+      (event) => {
+        applyEvalStreamEvent(event)
+        if (event.type === 'error') throw new Error(event.error)
+      },
+    )
+  }, [applyEvalStreamEvent])
+
   const syncCall = useCallback(
-    async (event: 'call.started' | 'call.updated' | 'call.ended') => {
+    async (event: 'call.started' | 'call.updated') => {
       const id = callIdRef.current
       if (!id) return
 
@@ -181,7 +225,6 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
           source: 'vapi',
           agentVersion: assistantIdRef.current ?? undefined,
           startedAt: startedAtRef.current ?? undefined,
-          endedAt: event === 'call.ended' ? new Date().toISOString() : undefined,
           callType: 'web',
           acceptanceProfile: acceptanceProfileRef.current,
           messages: messagesRef.current,
@@ -205,9 +248,14 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
 
     const id = callIdRef.current
     setState('ending')
+    setEvalSteps([])
+    if (id) {
+      setFinalizingCallId(id)
+      navigate(`/calls/${id}`, { replace: true })
+    }
 
     try {
-      if (id) await syncCall('call.ended')
+      if (id) await syncEndedCall()
       setState('idle')
       setCallId(null)
       setTurns([])
@@ -218,18 +266,19 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
       setIsMicMuted(true)
       setIsPushToTalkActive(false)
       setIsChatMode(false)
-      if (id) navigate(`/calls/${id}`, { replace: true })
     } catch (e) {
       setState('error')
       setError(e instanceof Error ? e.message : 'Failed to sync call')
+      setEvalSteps([])
     } finally {
       callIdRef.current = null
       messagesRef.current = []
       startedAtRef.current = null
       metricsRef.current = createLiveMonitorMetrics(null)
       finalizingRef.current = false
+      window.setTimeout(() => setFinalizingCallId(null), 2000)
     }
-  }, [clearEndFallbackTimer, navigate, syncCall])
+  }, [clearEndFallbackTimer, navigate, syncEndedCall])
 
   const setMicMuted = useCallback((muted: boolean) => {
     vapiRef.current?.setMuted(muted)
@@ -559,6 +608,8 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
         isChatMode,
         acceptanceProfile,
         profileSaving,
+        evalSteps,
+        finalizingCallId,
         startCall,
         endCall,
         startTalking,

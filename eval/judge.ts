@@ -51,6 +51,28 @@ export function getJudgePhases(
   }))
 }
 
+/** Steps shown in the UI timeline when a live call ends and eval runs. */
+export function getCallEndPlanSteps(source: Transcript['source']): { id: string; label: string }[] {
+  const judgePhases = getJudgePhases()
+  const steps: { id: string; label: string }[] = [
+    { id: 'save', label: 'Guardando transcripción' },
+  ]
+  if (source === 'vapi') {
+    steps.push({ id: 'recording', label: 'Procesando grabación' })
+  }
+  steps.push(
+    ...judgePhases.map((p) => ({
+      id: p.phase,
+      label:
+        p.phase === 'primary'
+          ? `Calificando con ${providerLabel(p.provider)}`
+          : `Verificación cruzada con ${providerLabel(p.provider)}`,
+    })),
+  )
+  steps.push({ id: 'finalize', label: 'Generando el reporte' })
+  return steps
+}
+
 /**
  * Resolves the ordered list of judges. DeepSeek runs first (primary, canonical
  * scores); Anthropic runs second as an independent cross-check when its key is

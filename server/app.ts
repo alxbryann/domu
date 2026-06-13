@@ -7,7 +7,7 @@ import {
 } from '../shared/acceptance-profile.js'
 import { CallWebhookSchema } from '../eval/call-ingest.js'
 import { generateTranscriptTurns, getGeneratorProvider } from '../eval/generate-transcript.js'
-import { evaluateTranscript, getJudgePhases, providerLabel } from '../eval/judge.js'
+import { evaluateTranscript, getCallEndPlanSteps, getJudgePhases, providerLabel } from '../eval/judge.js'
 import { TranscriptSchema } from '../eval/types.js'
 import {
   ingestCallEvent,
@@ -146,6 +146,41 @@ app.post('/api/calls/sync', async (req, res) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Call sync failed'
     res.status(400).json({ error: message })
+  }
+})
+
+// Streaming variant of /api/calls/sync for call.ended — emits SSE so the live-call
+// UI can show the same progress timeline as synthetic generation.
+app.post('/api/calls/sync/stream', async (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+  })
+  const send = (event: string, data: unknown) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+  }
+
+  try {
+    const payload = CallWebhookSchema.parse(req.body)
+    if (payload.event !== 'call.ended') {
+      const { transcript, result } = await ingestCallEvent(payload)
+      send('done', { call: transcript, result })
+      return res.end()
+    }
+
+    const source = payload.call.source ?? 'vapi'
+    send('plan', { steps: getCallEndPlanSteps(source) })
+
+    const { transcript, result } = await ingestCallEvent(payload, (event) => {
+      send('step', { id: event.step, status: event.status })
+    })
+    send('done', { call: transcript, result })
+    res.end()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Call sync failed'
+    send('error', { error: message })
+    res.end()
   }
 })
 

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CallChatInput } from '../components/CallChatInput'
+import { ProcessingTimeline } from '../components/ProcessingTimeline'
 import { LiveAlertToasts } from '../components/LiveAlertToasts'
 import { LiveMonitorPanel } from '../components/LiveMonitorPanel'
 import { AcceptanceProfileEditor } from '../components/AcceptanceProfileEditor'
@@ -31,6 +32,8 @@ export function LiveCallPage() {
     isChatMode,
     acceptanceProfile,
     profileSaving,
+    evalSteps,
+    finalizingCallId,
     endCall,
     startTalking,
     stopTalking,
@@ -50,13 +53,16 @@ export function LiveCallPage() {
 
   useEffect(() => {
     if (isThisCall || state !== 'idle') return
+    if (finalizingCallId === id) return
 
     const timer = window.setTimeout(() => {
       navigate('/calls', { replace: true })
     }, 1500)
 
     return () => window.clearTimeout(timer)
-  }, [isThisCall, state, navigate, id])
+  }, [isThisCall, state, navigate, id, finalizingCallId])
+
+  const isFinalizing = state === 'ending' || (finalizingCallId === id && evalSteps.length > 0)
 
   if (!id) return null
 
@@ -96,6 +102,20 @@ export function LiveCallPage() {
       {error && (
         <div className="px-6 pt-4 shrink-0">
           <ComplianceAlert variant="danger" title="Call error" message={error} />
+        </div>
+      )}
+
+      {isFinalizing && evalSteps.length > 0 && (
+        <div className="px-6 pt-4 shrink-0">
+          <div className="rounded-domu-lg bg-app-card border border-domu-blue/30 p-5 space-y-3">
+            <div>
+              <p className="text-sm font-semibold text-app-text">Evaluando la llamada</p>
+              <p className="text-xs text-app-muted mt-1">
+                Guardando la transcripción, procesando la grabación y calificando con el juez LLM.
+              </p>
+            </div>
+            <ProcessingTimeline steps={evalSteps} />
+          </div>
         </div>
       )}
 

@@ -65,6 +65,11 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }),
+  syncCallStream: (
+    body: CallSyncPayload,
+    onEvent: (event: SyncStreamEvent) => void,
+    signal?: AbortSignal,
+  ) => streamSse('/calls/sync/stream', body, onEvent, signal),
   updateCallProfile: (id: string, acceptanceProfile: CallAcceptanceProfile) =>
     fetchJson<{ call: Transcript }>(`/calls/${id}/profile`, {
       method: 'PATCH',
@@ -109,21 +114,24 @@ export const api = {
   ) => streamSse('/calls/generate/stream', body, onEvent, signal),
 }
 
-export type GenerateStreamEvent =
+export type StreamEvent =
   | { type: 'plan'; steps: { id: string; label: string }[] }
   | { type: 'step'; id: string; status: 'start' | 'done' }
   | { type: 'done'; call: Transcript; result: EvalResult | null }
   | { type: 'error'; error: string }
 
+export type GenerateStreamEvent = StreamEvent
+export type SyncStreamEvent = StreamEvent
+
 /**
  * POSTs a body and consumes a Server-Sent Events response, invoking onEvent for
- * each parsed event. Used by the synthetic-call generator to drive a live
- * progress timeline (EventSource can't POST, so we read the stream by hand).
+ * each parsed event. Used by the synthetic-call generator and live-call finalization
+ * to drive a live progress timeline (EventSource can't POST, so we read the stream by hand).
  */
 async function streamSse(
   url: string,
   body: unknown,
-  onEvent: (event: GenerateStreamEvent) => void,
+  onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
 ): Promise<void> {
   const res = await fetch(`${BASE}${url}`, {
@@ -158,7 +166,7 @@ async function streamSse(
         else if (line.startsWith('data:')) data += line.slice(5).trim()
       }
       if (!data) continue
-      onEvent({ type: eventName, ...JSON.parse(data) } as GenerateStreamEvent)
+      onEvent({ type: eventName, ...JSON.parse(data) } as StreamEvent)
     }
   }
 }
