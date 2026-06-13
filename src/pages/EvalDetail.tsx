@@ -107,8 +107,13 @@ export function EvalDetailPage() {
           <Link to="/calls" className="text-xs text-domu-blue hover:underline">
             ← Back to calls
           </Link>
-          <div className="flex items-center gap-3 mt-2">
-            <h1 className="text-2xl font-bold text-app-text">{call.id}</h1>
+          <div className="flex items-center gap-3 mt-2 flex-wrap">
+            <h1 className="text-2xl font-bold text-app-text">
+              {call.metadata.name ?? call.id}
+            </h1>
+            {call.metadata.name && (
+              <span className="text-xs font-mono text-app-muted">{call.id}</span>
+            )}
             <Badge
               variant={
                 call.status === 'live'

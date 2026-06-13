@@ -74,7 +74,10 @@ export async function getRecordingSignedUrl(
   return data.signedUrl
 }
 
-export async function persistCallRecording(transcript: Transcript): Promise<Transcript> {
+export async function persistCallRecording(
+  transcript: Transcript,
+  options?: { retryDelaysMs?: number[] },
+): Promise<Transcript> {
   if (transcript.metadata.recordingStoragePath) {
     return transcript
   }
@@ -82,7 +85,8 @@ export async function persistCallRecording(transcript: Transcript): Promise<Tran
   let recordingUrl = transcript.metadata.recordingUrl
 
   if (!recordingUrl && transcript.source === 'vapi') {
-    recordingUrl = (await fetchVapiRecordingUrl(transcript.id)) ?? undefined
+    recordingUrl =
+      (await fetchVapiRecordingUrl(transcript.id, options?.retryDelaysMs)) ?? undefined
   }
 
   if (!recordingUrl) return transcript

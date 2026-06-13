@@ -5,6 +5,7 @@ import { TranscriptSchema, type Transcript, type EvalResult } from '../eval/type
 import { deleteCallRecording, persistCallRecording } from './call-recording.js'
 import { getSupabase } from './supabase.js'
 import { applyEscalationAlerts } from './escalation-alerts.js'
+import { VAPI_RECORDING_RETRY_DELAYS_MS } from './vapi.js'
 
 type CallRow = {
   id: string
@@ -169,6 +170,53 @@ export async function listResults(): Promise<EvalResult[]> {
   return (data as EvalResultRow[]).map(rowToResult)
 }
 
+const backfillInFlight = new Set<string>()
+
+/** Retry fetching/uploading until Vapi exposes the recording URL. */
+export function scheduleRecordingBackfill(callId: string): void {
+  if (backfillInFlight.has(callId)) return
+  backfillInFlight.add(callId)
+
+  void (async () => {
+    try {
+      for (const delayMs of VAPI_RECORDING_RETRY_DELAYS_MS) {
+        if (delayMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs))
+        }
+
+        const transcript = await loadTranscript(callId)
+        if (!transcript || transcript.metadata.recordingStoragePath) return
+
+        const updated = await persistCallRecording(transcript, { retryDelaysMs: [0] })
+        if (updated.metadata.recordingStoragePath) {
+          await saveTranscript(updated)
+          return
+        }
+      }
+    } catch (err) {
+      console.error(
+        `Recording backfill failed for ${callId}:`,
+        err instanceof Error ? err.message : err,
+      )
+    } finally {
+      backfillInFlight.delete(callId)
+    }
+  })()
+}
+
+/** Load transcript and persist recording if missing (used by API lazy backfill). */
+export async function ensureCallRecording(callId: string): Promise<Transcript | null> {
+  const transcript = await loadTranscript(callId)
+  if (!transcript) return null
+  if (transcript.metadata.recordingStoragePath) return transcript
+
+  const updated = await persistCallRecording(transcript)
+  if (updated !== transcript) {
+    await saveTranscript(updated)
+  }
+  return updated
+}
+
 export async function ingestCallEvent(payload: CallWebhookPayload): Promise<{
   transcript: Transcript
   result: EvalResult | null
@@ -184,6 +232,10 @@ export async function ingestCallEvent(payload: CallWebhookPayload): Promise<{
 
   transcript = await persistCallRecording(transcript)
   await saveTranscript(transcript)
+
+  if (!transcript.metadata.recordingStoragePath && transcript.source === 'vapi') {
+    scheduleRecordingBackfill(transcript.id)
+  }
 
   if (transcript.turns.length === 0) {
     const completed: Transcript = { ...transcript, status: 'completed' }

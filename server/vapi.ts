@@ -35,11 +35,15 @@ function extractRecordingUrl(data: VapiCallResponse): string | null {
   )
 }
 
-export async function fetchVapiRecordingUrl(callId: string): Promise<string | null> {
+/** Vapi often needs 10–30s after call end before recording URLs are available. */
+export const VAPI_RECORDING_RETRY_DELAYS_MS = [0, 2000, 5000, 10000, 20000, 30000, 45000]
+
+export async function fetchVapiRecordingUrl(
+  callId: string,
+  delaysMs: number[] = VAPI_RECORDING_RETRY_DELAYS_MS,
+): Promise<string | null> {
   const key = process.env.VAPI_PRIVATE_KEY
   if (!key) return null
-
-  const delaysMs = [0, 2000, 5000]
 
   for (const delayMs of delaysMs) {
     if (delayMs > 0) {

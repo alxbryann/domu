@@ -19,6 +19,7 @@ export interface Transcript {
     endedAt?: string
     accountId?: string
     description?: string
+    name?: string
     callType?: string
     recordingUrl?: string
     recordingStoragePath?: string

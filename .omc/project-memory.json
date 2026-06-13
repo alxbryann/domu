@@ -244,8 +244,8 @@
   "hotPaths": [
     {
       "path": "eval/judge.ts",
-      "accessCount": 21,
-      "lastAccessed": 1781358670349,
+      "accessCount": 22,
+      "lastAccessed": 1781358886875,
       "type": "file"
     },
     {
@@ -327,6 +327,12 @@
       "type": "file"
     },
     {
+      "path": "README.md",
+      "accessCount": 6,
+      "lastAccessed": 1781358878660,
+      "type": "file"
+    },
+    {
       "path": "src/components/LiveAlertToasts.tsx",
       "accessCount": 5,
       "lastAccessed": 1781316355827,
@@ -336,12 +342,6 @@
       "path": "package.json",
       "accessCount": 5,
       "lastAccessed": 1781317268137,
-      "type": "file"
-    },
-    {
-      "path": "README.md",
-      "accessCount": 5,
-      "lastAccessed": 1781318891954,
       "type": "file"
     },
     {
@@ -405,6 +405,24 @@
       "type": "file"
     },
     {
+      "path": "eval/validate.ts",
+      "accessCount": 3,
+      "lastAccessed": 1781358887380,
+      "type": "file"
+    },
+    {
+      "path": "eval/rules.ts",
+      "accessCount": 3,
+      "lastAccessed": 1781358887620,
+      "type": "file"
+    },
+    {
+      "path": "eval/synthetic-transcripts.ts",
+      "accessCount": 3,
+      "lastAccessed": 1781360571920,
+      "type": "file"
+    },
+    {
       "path": "src/pages/Overview.tsx",
       "accessCount": 2,
       "lastAccessed": 1781309683198,
@@ -441,33 +459,27 @@
       "type": "file"
     },
     {
-      "path": "eval/synthetic-transcripts.ts",
-      "accessCount": 2,
-      "lastAccessed": 1781317491184,
-      "type": "file"
-    },
-    {
       "path": "src/components/CallChatInput.tsx",
       "accessCount": 2,
       "lastAccessed": 1781317688433,
       "type": "file"
     },
     {
-      "path": "eval/validate.ts",
-      "accessCount": 2,
-      "lastAccessed": 1781355541980,
-      "type": "file"
-    },
-    {
-      "path": "eval/rules.ts",
-      "accessCount": 2,
-      "lastAccessed": 1781355542064,
-      "type": "file"
-    },
-    {
       "path": "eval/run.ts",
       "accessCount": 2,
       "lastAccessed": 1781355640301,
+      "type": "file"
+    },
+    {
+      "path": "ONE_PAGER.md",
+      "accessCount": 2,
+      "lastAccessed": 1781358878162,
+      "type": "file"
+    },
+    {
+      "path": "eval/criteria.ts",
+      "accessCount": 2,
+      "lastAccessed": 1781358878983,
       "type": "file"
     },
     {
@@ -528,18 +540,6 @@
       "path": "src/lib/vapi-session.ts",
       "accessCount": 1,
       "lastAccessed": 1781312391770,
-      "type": "file"
-    },
-    {
-      "path": "eval/criteria.ts",
-      "accessCount": 1,
-      "lastAccessed": 1781316738496,
-      "type": "file"
-    },
-    {
-      "path": "ONE_PAGER.md",
-      "accessCount": 1,
-      "lastAccessed": 1781316752643,
       "type": "file"
     }
   ],

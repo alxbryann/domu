@@ -13,6 +13,7 @@ import {
   ingestCallEvent,
   importCallsExport,
   deleteTranscript,
+  ensureCallRecording,
   listResults,
   listTranscripts,
   loadResult,
@@ -90,7 +91,7 @@ app.get('/api/calls/:id', async (req, res) => {
 
 app.get('/api/calls/:id/recording', async (req, res) => {
   try {
-    const transcript = await loadTranscript(req.params.id)
+    const transcript = await ensureCallRecording(req.params.id)
     if (!transcript) return res.status(404).json({ error: 'Call not found' })
 
     const storagePath = transcript.metadata.recordingStoragePath
@@ -173,6 +174,33 @@ app.patch('/api/calls/:id/profile', async (req, res) => {
     res.json({ call: updated })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Profile update failed'
+    res.status(400).json({ error: message })
+  }
+})
+
+app.patch('/api/calls/:id/name', async (req, res) => {
+  try {
+    const raw = req.body?.name
+    if (typeof raw !== 'string') {
+      return res.status(400).json({ error: 'name must be a string' })
+    }
+    const trimmed = raw.trim()
+    if (trimmed.length > 120) {
+      return res.status(400).json({ error: 'name must be 120 characters or fewer' })
+    }
+
+    const existing = await loadTranscript(req.params.id)
+    if (!existing) return res.status(404).json({ error: 'Call not found' })
+
+    const metadata = { ...existing.metadata }
+    if (trimmed) metadata.name = trimmed
+    else delete metadata.name
+
+    const updated = { ...existing, metadata }
+    await saveTranscript(updated)
+    res.json({ call: updated })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Name update failed'
     res.status(400).json({ error: message })
   }
 })

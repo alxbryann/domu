@@ -39,21 +39,27 @@ polished call with one FDCPA violation still fails.
 ## How it works
 
 ```
-transcript ──▶ LLM judge (rubric + structured JSON)  ─┐
-           └─▶ deterministic FDCPA rule layer (regex) ─┴─▶ reconciled result ──▶ dashboard
+transcript ──▶ primary LLM judge (DeepSeek, else Anthropic) ──▶ canonical scores
+           ├─▶ optional second judge (Anthropic cross-check, not averaged) ─┐
+           └─▶ deterministic FDCPA rule layer (regex) ─────────────────────┴─▶ dashboard
 ```
 
-1. **LLM-as-judge** — scores all 7 criteria in one structured pass, validated with
+1. **Primary LLM judge** — one structured pass scores all 7 criteria, validated with
    Zod, with few-shot calibration (a known-good and known-bad call) in the prompt.
    Every score must cite **exact transcript quotes** as evidence, so a human can
-   verify a verdict in seconds. Provider precedence is DeepSeek → Anthropic (same key
-   logic as the challenge's trial key).
-2. **Rule layer** ([`eval/rules.ts`](eval/rules.ts)) — deterministic regex for
+   verify a verdict in seconds. DeepSeek runs first when `DEEPSEEK_API_KEY` is set;
+   otherwise Anthropic is used alone.
+2. **Optional cross-check** — when both `DEEPSEEK_API_KEY` and `ANTHROPIC_API_KEY` are
+   set, Claude runs a second independent pass. Its verdict is **not averaged** into the
+   headline score; the primary judge's scores are canonical. If the two judges disagree
+   (pass/fail mismatch or any criterion diverges by ≥ 2 points), the call is flagged
+   `judgeDisagreement: true`.
+3. **Rule layer** ([`eval/rules.ts`](eval/rules.ts)) — deterministic regex for
    unambiguous violations (threats of jail/garnishment, shaming language). It can't be
    fooled by the same blind spot as the LLM.
-3. **Reconciliation** — if the rules fire but the judge passed compliance, the result
-   is flagged `judgeDisagreement: true` and surfaced for human review. The two
-   signals check each other.
+4. **Reconciliation** — if the rules fire but the primary judge passed compliance, or
+   if the two judges disagree, the result is flagged `judgeDisagreement: true` and
+   surfaced for human review.
 
 ### Call lifecycle
 
@@ -68,57 +74,31 @@ transcript ──▶ LLM judge (rubric + structured JSON)  ─┐
 
 This is the core question, and it has two halves that are easy to confuse.
 
-**Reliability (consistency) ≠ validity (correctness).** Running the judge 3× and
-averaging makes it more *consistent* — but if the judge is biased, you just get a
-*stable wrong answer* with the same blind spot every time. Consistency is necessary,
-not sufficient. Correctness is measured against **human ground truth**, not against
-the judge's own repeated opinion.
+**Reliability (consistency) ≠ validity (correctness).** Today we measure correctness
+against **human ground truth** (the golden set in `data/golden-labels.json`), not
+against the judge repeating itself.
 
-### What's built today
+### What runs today
 
-1. **A golden set with known verdicts.** [`eval/synthetic-transcripts.ts`](eval/synthetic-transcripts.ts)
-   holds 9 hand-authored transcripts (good / bad / edge) whose correct outcome we
-   control — including a clean discriminator where compliance *passes* but the call
-   still fails overall (no outcome secured). Transcript and label live in the same
-   object so they can't drift.
+- **One canonical judge pass** — DeepSeek when configured, otherwise Anthropic. There is
+  no 3× repetition and no score averaging across multiple runs.
+- **Optional second-model cross-check** — when both API keys are set, Claude scores the
+  same transcript independently. Disagreements are flagged; scores still come from the
+  primary judge only.
+- **Deterministic rule layer** — regex catches unambiguous FDCPA violations the LLM
+  might miss. Rule↔judge conflicts also flag `judgeDisagreement`.
+- **Golden-set validation** — `npm run eval:validate` compares judge verdicts against
+  human labels on the curated synthetic transcripts.
 
-   ```bash
-   npm run seed:synthetic   # seed transcripts + write data/golden-labels.json
-   npm run eval:all         # score them with the live judge
-   npm run eval:validate    # measure agreement vs. the human labels
-   # → Golden set validation: 18/18 checks passed (100%)
-   ```
+### What we'd add next (roadmap)
 
-   The very first run paid off: it caught a case *we* had mislabeled — fabricating a
-   balance and inventing settlement terms is an FDCPA §807 misrepresentation, so
-   compliance should fail. The golden set surfaced the disagreement; we corrected the
-   label. That feedback loop is the whole point.
-
-2. **An independent deterministic oracle.** The regex rule layer flags obvious
-   violations the judge might soften, and any judge↔rules disagreement is recorded on
-   the result and shown in the dashboard.
-
-3. **Calibration + mandatory evidence.** Few-shot good/bad anchors in the judge
-   prompt, and every score cites exact quotes so a human spot-check is fast.
-
-### How we'd harden it (the honest roadmap)
-
-- **Measure the right metric, not raw accuracy.** Track **precision/recall per
-  criterion**, with the spotlight on **compliance recall** — the expensive error is a
-  *false negative* (judge says `pass` when there was a violation). A judge that
-  approves everything scores ~80% "accuracy" and is useless. Report **Cohen's kappa**
-  instead of a raw agreement %, since raw % is inflated when classes are imbalanced.
-- **Ensemble of *different* models, not the same model N×.** Same model repeated gives
-  correlated errors (disagreement is just noise). Different models (DeepSeek + Claude +
-  GPT) give partially independent errors — when they disagree, you've found a genuinely
-  ambiguous case to route to a human.
-- **Never average a safety gate.** For compliance, aggregate *conservatively*: if any
-  run flags a critical FDCPA violation, the call fails (min, not mean). Averaging a `1`
-  with two `4`s gives a passing `3` and lets a violation through. Averaging is fine for
-  the continuous criteria (tone, outcome) — wrong for the gate.
-- **Human-in-the-loop flywheel.** Disagreements (judge↔rules, judge↔judge, low
-  confidence) go to a review queue; reviewed calls become new golden labels, so the
-  validation set — and the judge — improve with use.
+- **Conservative ensemble on compliance only** — e.g. 2-of-3 across different models,
+  never averaging a safety gate (averaging a `1` with two `4`s would yield a passing
+  `3` and let a violation through).
+- **Better metrics** — precision/recall per criterion and Cohen's kappa instead of raw
+  agreement %, with compliance recall as the headline safety metric.
+- **Human-in-the-loop flywheel** — disagreements go to a review queue; reviewed calls
+  become new golden labels so the validation set improves with use.
 
 ---
 
@@ -129,7 +109,7 @@ You don't need real phone calls. Four ways to produce a scored transcript:
 | Method | How |
 |---|---|
 | **Generate one in the dashboard** | On `/calls` → **Generate test call**, describe a scenario in plain English ("the agent threatens the customer with arrest"). An LLM invents the transcript, the eval scores it, and it opens in call detail. Backed by `POST /api/calls/generate`. Great for demos and probing edge cases. |
-| **Seed the golden set** | `npm run seed:synthetic` — the 9 curated transcripts above |
+| **Seed the golden set** | `npm run seed:synthetic` — curated transcripts in [`eval/synthetic-transcripts.ts`](eval/synthetic-transcripts.ts) |
 | **Live Vapi call** | Set `VAPI_PUBLIC_KEY` + `VAPI_ASSISTANT_ID`, then **Start live call** on `/calls`. The transcript syncs to the eval when the call ends. See [scripts/vapi-setup.md](scripts/vapi-setup.md). |
 | **Production webhook** | Domu's orchestrator `POST`s to `/api/webhooks/call` on `call.ended` — no manual step |
 
@@ -174,7 +154,9 @@ npm run seed:synthetic && npm run eval:all && npm run eval:validate
 ### Environment
 
 ```
-# LLM judge + transcript generator (DeepSeek used first when set, else Anthropic)
+# LLM judge + transcript generator
+# Primary: DeepSeek when DEEPSEEK_API_KEY is set, else Anthropic
+# Cross-check: second Anthropic pass when both keys are set (scores not averaged)
 DEEPSEEK_API_KEY=your-key-here
 ANTHROPIC_API_KEY=your-key-here
 
@@ -229,13 +211,13 @@ versions, and a number you can put in front of a regulated client.
 
 ## Scaling
 
-| Today (prototype) | Production |
+| Today | Next |
 |---|---|
-| Single judge pass | Conservative 2-of-3 ensemble **on compliance only** (cost-controlled) |
-| Raw agreement % | Precision/recall + Cohen's kappa, tracked per criterion over time |
+| One primary judge pass; optional second-model cross-check (not averaged) | Conservative 2-of-3 ensemble **on compliance only** (cost-controlled) |
+| Golden-set validation via `eval:validate` | Precision/recall + Cohen's kappa, tracked per criterion over time |
 | 9-transcript golden set | Continuously grown from human-reviewed disagreements |
 | One criteria set in code | Per-company criteria profiles in the DB |
-| Manual `eval:all` for dev | Webhook on every orchestrated call (already wired) |
+| Webhook on every orchestrated call | Review queue wired to disagreement flags |
 
 ---
 

@@ -89,6 +89,7 @@ export function buildTranscript(
       callDate: call.startedAt ?? existing?.metadata.callDate ?? new Date().toISOString(),
       endedAt: event === 'call.ended' ? (call.endedAt ?? new Date().toISOString()) : existing?.metadata.endedAt,
       description: call.description ?? existing?.metadata.description,
+      name: existing?.metadata.name,
       callType: call.callType ?? existing?.metadata.callType,
       recordingUrl: call.recordingUrl ?? existing?.metadata.recordingUrl,
       recordingStoragePath: existing?.metadata.recordingStoragePath,

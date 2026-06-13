@@ -7,6 +7,7 @@ import { DataTable } from '../design-system/components/DataTable'
 import { SectionLabel } from '../design-system/components/SectionLabel'
 import { VapiLiveCallPanel } from '../components/VapiLiveCallPanel'
 import { GenerateCallPanel } from '../components/GenerateCallPanel'
+import { CallNameCell } from '../components/CallNameCell'
 import { api } from '../lib/api'
 import { downloadCallReport } from '../lib/call-report'
 import type { CallStatus, CallWithResult } from '../types'
@@ -185,7 +186,28 @@ export function CallsPage() {
             {
               key: 'id',
               header: 'Call ID',
-              render: (c) => <span className="text-app-text font-medium">{c.id}</span>,
+              render: (c) => (
+                <span className="text-app-text-secondary font-mono text-xs">{c.id}</span>
+              ),
+            },
+            {
+              key: 'name',
+              header: 'Name',
+              render: (c) => (
+                <CallNameCell
+                  callId={c.id}
+                  name={c.metadata.name}
+                  onSaved={(name) =>
+                    setCalls((prev) =>
+                      prev.map((row) =>
+                        row.id === c.id
+                          ? { ...row, metadata: { ...row.metadata, name } }
+                          : row,
+                      ),
+                    )
+                  }
+                />
+              ),
             },
             {
               key: 'status',

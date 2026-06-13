@@ -67,6 +67,7 @@ export const TranscriptSchema = z.object({
     endedAt: z.string().optional(),
     accountId: z.string().optional(),
     description: z.string().optional(),
+    name: z.string().max(120).optional(),
     callType: z.string().optional(),
     recordingUrl: z.string().optional(),
     recordingStoragePath: z.string().optional(),

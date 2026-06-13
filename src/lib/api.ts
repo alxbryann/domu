@@ -71,6 +71,12 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ acceptanceProfile }),
     }),
+  updateCallName: (id: string, name: string) =>
+    fetchJson<{ call: Transcript }>(`/calls/${id}/name`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    }),
   deleteCall: (id: string) =>
     fetchJson<{ ok: true }>(`/calls/${id}`, { method: 'DELETE' }),
   importCalls: (body: unknown) =>
