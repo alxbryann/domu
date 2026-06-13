@@ -275,9 +275,10 @@ export async function importCallsExport(raw: unknown): Promise<
   Array<{ call: Transcript; result: EvalResult | null }>
 > {
   const payloads = parseCallsExport(raw)
-  const imported = []
+  const imported: Array<{ call: Transcript; result: EvalResult | null }> = []
   for (const payload of payloads) {
-    imported.push(await ingestCallEvent(payload))
+    const { transcript, result } = await ingestCallEvent(payload)
+    imported.push({ call: transcript, result })
   }
   return imported
 }
