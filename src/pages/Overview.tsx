@@ -4,17 +4,23 @@ import { MetricCard } from '../design-system/components/MetricCard'
 import { Badge } from '../design-system/components/Badge'
 import { SectionLabel } from '../design-system/components/SectionLabel'
 import { DataTable } from '../design-system/components/DataTable'
+import { OverviewSkeleton } from '../design-system/components/OverviewSkeleton'
 import { api } from '../lib/api'
 import type { EvalResult, OverviewData } from '../types'
 
 export function OverviewPage() {
   const [data, setData] = useState<OverviewData | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const navigate = useNavigate()
 
   useEffect(() => {
-    api.getOverview().then(setData).catch((e) => setError(e.message))
+    api
+      .getOverview()
+      .then(setData)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
     const interval = setInterval(() => {
       api.getOverview().then(setData).catch(() => {})
     }, 5000)
@@ -29,8 +35,8 @@ export function OverviewPage() {
     )
   }
 
-  if (!data) {
-    return <div className="p-8 text-app-muted">Loading...</div>
+  if (loading || !data) {
+    return <OverviewSkeleton />
   }
 
   return (

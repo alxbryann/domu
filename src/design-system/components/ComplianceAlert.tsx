@@ -1,7 +1,7 @@
 interface ComplianceAlertProps {
   title: string
   message: string
-  variant?: 'warning' | 'danger' | 'info'
+  variant?: 'warning' | 'danger' | 'info' | 'success'
   className?: string
 }
 
@@ -9,6 +9,7 @@ const variants = {
   warning: 'bg-domu-warning/10 border-domu-warning/30 text-domu-warning',
   danger: 'bg-domu-danger/10 border-domu-danger/30 text-domu-danger',
   info: 'bg-domu-info/10 border-domu-info/30 text-domu-info',
+  success: 'bg-domu-success/10 border-domu-success/30 text-domu-success',
 }
 
 const DangerIcon = () => (
@@ -32,10 +33,18 @@ const InfoIcon = () => (
   </svg>
 )
 
+const SuccessIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="8" cy="8" r="6.5" />
+    <path d="M5 8l2 2 4-4" />
+  </svg>
+)
+
 const icons = {
   danger: <DangerIcon />,
   warning: <WarningIcon />,
   info: <InfoIcon />,
+  success: <SuccessIcon />,
 }
 
 export function ComplianceAlert({

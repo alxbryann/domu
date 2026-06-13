@@ -92,4 +92,67 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }),
+  generateCallStream: (
+    body: {
+      scenario: string
+      expectedLabel?: 'good' | 'bad' | 'edge'
+      acceptanceProfile?: CallAcceptanceProfile
+    },
+    onEvent: (event: GenerateStreamEvent) => void,
+    signal?: AbortSignal,
+  ) => streamSse('/calls/generate/stream', body, onEvent, signal),
+}
+
+export type GenerateStreamEvent =
+  | { type: 'plan'; steps: { id: string; label: string }[] }
+  | { type: 'step'; id: string; status: 'start' | 'done' }
+  | { type: 'done'; call: Transcript; result: EvalResult | null }
+  | { type: 'error'; error: string }
+
+/**
+ * POSTs a body and consumes a Server-Sent Events response, invoking onEvent for
+ * each parsed event. Used by the synthetic-call generator to drive a live
+ * progress timeline (EventSource can't POST, so we read the stream by hand).
+ */
+async function streamSse(
+  url: string,
+  body: unknown,
+  onEvent: (event: GenerateStreamEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const res = await fetch(`${BASE}${url}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal,
+  })
+  if (!res.ok || !res.body) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error ?? 'Request failed')
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    // SSE frames are separated by a blank line; each frame has event:/data: lines.
+    let sep: number
+    while ((sep = buffer.indexOf('\n\n')) !== -1) {
+      const frame = buffer.slice(0, sep)
+      buffer = buffer.slice(sep + 2)
+      let eventName = 'message'
+      let data = ''
+      for (const line of frame.split('\n')) {
+        if (line.startsWith('event:')) eventName = line.slice(6).trim()
+        else if (line.startsWith('data:')) data += line.slice(5).trim()
+      }
+      if (!data) continue
+      onEvent({ type: eventName, ...JSON.parse(data) } as GenerateStreamEvent)
+    }
+  }
 }

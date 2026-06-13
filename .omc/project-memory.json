@@ -243,15 +243,21 @@
   },
   "hotPaths": [
     {
+      "path": "eval/judge.ts",
+      "accessCount": 21,
+      "lastAccessed": 1781358670349,
+      "type": "file"
+    },
+    {
       "path": "src/context/VapiCallContext.tsx",
-      "accessCount": 14,
-      "lastAccessed": 1781316400342,
+      "accessCount": 17,
+      "lastAccessed": 1781358479306,
       "type": "file"
     },
     {
       "path": "src/pages/LiveCallPage.tsx",
-      "accessCount": 13,
-      "lastAccessed": 1781316365740,
+      "accessCount": 14,
+      "lastAccessed": 1781355997863,
       "type": "file"
     },
     {
@@ -262,14 +268,26 @@
     },
     {
       "path": "shared/acceptance-profile.ts",
-      "accessCount": 10,
-      "lastAccessed": 1781317025915,
+      "accessCount": 11,
+      "lastAccessed": 1781355955000,
+      "type": "file"
+    },
+    {
+      "path": "server/app.ts",
+      "accessCount": 11,
+      "lastAccessed": 1781357846720,
       "type": "file"
     },
     {
       "path": "src/lib/api.ts",
-      "accessCount": 7,
-      "lastAccessed": 1781317865622,
+      "accessCount": 11,
+      "lastAccessed": 1781357862785,
+      "type": "file"
+    },
+    {
+      "path": "src/pages/Calls.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1781357163207,
       "type": "file"
     },
     {
@@ -279,27 +297,39 @@
       "type": "file"
     },
     {
-      "path": "server/app.ts",
+      "path": "server/call-store.ts",
       "accessCount": 6,
-      "lastAccessed": 1781317855720,
+      "lastAccessed": 1781355976569,
       "type": "file"
     },
     {
-      "path": "src/pages/Calls.tsx",
+      "path": "src/lib/live-monitor.ts",
       "accessCount": 6,
-      "lastAccessed": 1781317925798,
+      "lastAccessed": 1781356014468,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/ComplianceAlert.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1781356024716,
+      "type": "file"
+    },
+    {
+      "path": "src/types.ts",
+      "accessCount": 6,
+      "lastAccessed": 1781356419607,
+      "type": "file"
+    },
+    {
+      "path": "eval/types.ts",
+      "accessCount": 6,
+      "lastAccessed": 1781358577710,
       "type": "file"
     },
     {
       "path": "src/components/LiveAlertToasts.tsx",
       "accessCount": 5,
       "lastAccessed": 1781316355827,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/live-monitor.ts",
-      "accessCount": 5,
-      "lastAccessed": 1781316526472,
       "type": "file"
     },
     {
@@ -315,6 +345,12 @@
       "type": "file"
     },
     {
+      "path": "src/components/LiveMonitorPanel.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1781356004179,
+      "type": "file"
+    },
+    {
       "path": "src/layout/AppShell.tsx",
       "accessCount": 4,
       "lastAccessed": 1781309904405,
@@ -327,15 +363,15 @@
       "type": "file"
     },
     {
-      "path": "src/components/LiveMonitorPanel.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1781316505187,
-      "type": "file"
-    },
-    {
       "path": "src/design-system/components/Button.tsx",
       "accessCount": 4,
       "lastAccessed": 1781317779125,
+      "type": "file"
+    },
+    {
+      "path": "shared/escalation-triggers.ts",
+      "accessCount": 4,
+      "lastAccessed": 1781355955758,
       "type": "file"
     },
     {
@@ -366,18 +402,6 @@
       "path": "server/index.ts",
       "accessCount": 3,
       "lastAccessed": 1781311276345,
-      "type": "file"
-    },
-    {
-      "path": "src/design-system/components/ComplianceAlert.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1781313013734,
-      "type": "file"
-    },
-    {
-      "path": "shared/escalation-triggers.ts",
-      "accessCount": 3,
-      "lastAccessed": 1781316379063,
       "type": "file"
     },
     {
@@ -429,9 +453,21 @@
       "type": "file"
     },
     {
-      "path": "src/types.ts",
+      "path": "eval/validate.ts",
       "accessCount": 2,
-      "lastAccessed": 1781317778289,
+      "lastAccessed": 1781355541980,
+      "type": "file"
+    },
+    {
+      "path": "eval/rules.ts",
+      "accessCount": 2,
+      "lastAccessed": 1781355542064,
+      "type": "file"
+    },
+    {
+      "path": "eval/run.ts",
+      "accessCount": 2,
+      "lastAccessed": 1781355640301,
       "type": "file"
     },
     {
@@ -495,51 +531,15 @@
       "type": "file"
     },
     {
-      "path": "eval/validate.ts",
-      "accessCount": 1,
-      "lastAccessed": 1781316738433,
-      "type": "file"
-    },
-    {
-      "path": "eval/judge.ts",
-      "accessCount": 1,
-      "lastAccessed": 1781316738448,
-      "type": "file"
-    },
-    {
       "path": "eval/criteria.ts",
       "accessCount": 1,
       "lastAccessed": 1781316738496,
       "type": "file"
     },
     {
-      "path": "eval/run.ts",
-      "accessCount": 1,
-      "lastAccessed": 1781316751418,
-      "type": "file"
-    },
-    {
-      "path": "eval/rules.ts",
-      "accessCount": 1,
-      "lastAccessed": 1781316751910,
-      "type": "file"
-    },
-    {
       "path": "ONE_PAGER.md",
       "accessCount": 1,
       "lastAccessed": 1781316752643,
-      "type": "file"
-    },
-    {
-      "path": "eval/types.ts",
-      "accessCount": 1,
-      "lastAccessed": 1781317025131,
-      "type": "file"
-    },
-    {
-      "path": "server/call-store.ts",
-      "accessCount": 1,
-      "lastAccessed": 1781317025592,
       "type": "file"
     }
   ],

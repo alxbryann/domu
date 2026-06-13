@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { DataTableSkeleton } from './DataTableSkeleton'
 
 export interface Column<T> {
   key: string
@@ -13,6 +14,8 @@ interface DataTableProps<T> {
   onRowClick?: (row: T) => void
   emptyMessage?: string
   className?: string
+  loading?: boolean
+  skeletonRows?: number
 }
 
 export function DataTable<T extends { id?: string }>({
@@ -21,7 +24,19 @@ export function DataTable<T extends { id?: string }>({
   onRowClick,
   emptyMessage = 'No data found',
   className = '',
+  loading = false,
+  skeletonRows = 6,
 }: DataTableProps<T>) {
+  if (loading) {
+    return (
+      <DataTableSkeleton
+        columns={columns.length}
+        rows={skeletonRows}
+        className={className}
+      />
+    )
+  }
+
   if (data.length === 0) {
     return (
       <div className="text-center py-12 text-app-muted text-sm">{emptyMessage}</div>

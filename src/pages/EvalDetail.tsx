@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { AcceptanceProfileEditor } from '../components/AcceptanceProfileEditor'
 import { Badge } from '../design-system/components/Badge'
+import { Button } from '../design-system/components/Button'
 import { ScoreRing } from '../design-system/components/ScoreRing'
 import { CriterionCard } from '../design-system/components/CriterionCard'
 import { TranscriptViewer } from '../design-system/components/TranscriptViewer'
 import { ComplianceAlert } from '../design-system/components/ComplianceAlert'
 import { SectionLabel } from '../design-system/components/SectionLabel'
+import { EvalDetailSkeleton } from '../design-system/components/EvalDetailSkeleton'
 import { api } from '../lib/api'
+import { downloadCallReport } from '../lib/call-report'
 import type { CallStatus, EvalResult, Transcript } from '../types'
 import {
   DEFAULT_ACCEPTANCE_PROFILE,
@@ -90,7 +93,7 @@ export function EvalDetailPage() {
   }
 
   if (error) return <div className="p-8 text-domu-danger">{error}</div>
-  if (!call) return <div className="p-8 text-app-muted">Loading...</div>
+  if (!call) return <EvalDetailSkeleton />
 
   const allQuotes = [
     ...(result?.flaggedQuotes ?? []),
@@ -123,19 +126,30 @@ export function EvalDetailPage() {
             {call.metadata.agentVersion ? ` · Agent ${call.metadata.agentVersion}` : ''}
           </p>
         </div>
-        {result && (
-          <div className="flex items-center gap-4">
-            <ScoreRing score={result.weightedScore} label="Weighted Score" />
-            <div className="space-y-2">
-              <Badge variant={result.compliancePass ? 'success' : 'danger'}>
-                {result.compliancePass ? 'Compliance: Pass' : 'Compliance: Fail'}
-              </Badge>
-              <Badge variant={result.overallPass ? 'success' : 'danger'}>
-                {result.overallPass ? 'Overall: Pass' : 'Overall: Fail'}
-              </Badge>
+        <div className="flex flex-col items-end gap-3">
+          {result && (
+            <div className="flex items-center gap-4">
+              <ScoreRing score={result.weightedScore} label="Weighted Score" />
+              <div className="space-y-2">
+                <Badge variant={result.compliancePass ? 'success' : 'danger'}>
+                  {result.compliancePass ? 'Compliance: Pass' : 'Compliance: Fail'}
+                </Badge>
+                <Badge variant={result.overallPass ? 'success' : 'danger'}>
+                  {result.overallPass ? 'Overall: Pass' : 'Overall: Fail'}
+                </Badge>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+          {call.status !== 'live' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadCallReport(call, result)}
+            >
+              Descargar reporte (Word)
+            </Button>
+          )}
+        </div>
       </div>
 
       {call.status === 'live' && (
@@ -166,7 +180,25 @@ export function EvalDetailPage() {
         <ComplianceAlert
           variant="warning"
           title="Judge Disagreement Detected"
-          message="Rule-based compliance checks flagged violations that the LLM judge may have scored too leniently. Human review recommended."
+          message="Rule-based checks or the second judge disagreed with the primary judge's verdict. Human review recommended."
+        />
+      )}
+
+      {result?.crossJudge && (
+        <ComplianceAlert
+          variant={result.crossJudge.agreement ? 'success' : 'warning'}
+          title={
+            result.crossJudge.agreement
+              ? `Second judge agrees (${result.crossJudge.judgeVersion})`
+              : `Second judge disagrees (${result.crossJudge.judgeVersion})`
+          }
+          message={
+            result.crossJudge.agreement
+              ? `Independent cross-check confirmed the verdict. Both judges agree on compliance and overall pass/fail (max criterion gap: ${result.crossJudge.maxScoreDelta} pts).`
+              : `Primary: overall ${result.overallPass ? 'PASS' : 'FAIL'} / compliance ${result.compliancePass ? 'PASS' : 'FAIL'}. ` +
+                `Second judge: overall ${result.crossJudge.overallPass ? 'PASS' : 'FAIL'} / compliance ${result.crossJudge.compliancePass ? 'PASS' : 'FAIL'} ` +
+                `(max criterion gap: ${result.crossJudge.maxScoreDelta} pts). Human review recommended.`
+          }
         />
       )}
 

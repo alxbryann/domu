@@ -6,8 +6,8 @@ import {
   DEFAULT_ACCEPTANCE_PROFILE,
 } from '../shared/acceptance-profile.js'
 import { CallWebhookSchema } from '../eval/call-ingest.js'
-import { generateTranscriptTurns } from '../eval/generate-transcript.js'
-import { evaluateTranscript } from '../eval/judge.js'
+import { generateTranscriptTurns, getGeneratorProvider } from '../eval/generate-transcript.js'
+import { evaluateTranscript, getJudgePhases, providerLabel } from '../eval/judge.js'
 import { TranscriptSchema } from '../eval/types.js'
 import {
   ingestCallEvent,
@@ -265,6 +265,98 @@ app.post('/api/calls/generate', async (req, res) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Transcript generation failed'
     res.status(400).json({ error: message })
+  }
+})
+
+// Streaming variant of /api/calls/generate. Emits Server-Sent Events so the UI
+// can show a live timeline (script → primary judge → cross-check → report).
+app.post('/api/calls/generate/stream', async (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+  })
+  const send = (event: string, data: unknown) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+  }
+
+  try {
+    const scenario = typeof req.body?.scenario === 'string' ? req.body.scenario : ''
+    if (!scenario.trim()) {
+      send('error', { error: 'A scenario description is required' })
+      return res.end()
+    }
+
+    const rawLabel = req.body?.expectedLabel
+    const expectedLabel =
+      rawLabel === 'good' || rawLabel === 'bad' || rawLabel === 'edge' ? rawLabel : undefined
+
+    const profile = req.body?.acceptanceProfile
+      ? CallAcceptanceProfileSchema.parse(req.body.acceptanceProfile)
+      : DEFAULT_ACCEPTANCE_PROFILE
+
+    // Announce the steps the run will take so the UI can render them upfront.
+    const genProvider = getGeneratorProvider()
+    const judgePhases = getJudgePhases()
+    const plan: { id: string; label: string }[] = [
+      {
+        id: 'generate',
+        label: genProvider
+          ? `Escribiendo el guión (${providerLabel(genProvider)})`
+          : 'Escribiendo el guión',
+      },
+      ...judgePhases.map((p) => ({
+        id: p.phase,
+        label:
+          p.phase === 'primary'
+            ? `Calificando con ${providerLabel(p.provider)}`
+            : `Verificación cruzada con ${providerLabel(p.provider)}`,
+      })),
+      { id: 'finalize', label: 'Generando el reporte' },
+    ]
+    send('plan', { steps: plan })
+
+    send('step', { id: 'generate', status: 'start' })
+    const turns = await generateTranscriptTurns(scenario, profile, expectedLabel)
+
+    const now = new Date().toISOString()
+    const accountLast4 = profile.facts.find((f) => f.id === 'accountLast4')?.value
+    const transcript = TranscriptSchema.parse({
+      id: `gen-${Date.now().toString(36)}`,
+      source: 'domu',
+      status: 'completed',
+      metadata: {
+        companyId: 'default',
+        agentVersion: 'generated',
+        accountId: accountLast4 ? `ACC-${accountLast4}` : 'ACC-GEN',
+        callDate: now,
+        endedAt: now,
+        description: scenario.trim(),
+        callType: 'synthetic',
+        expectedLabel,
+        acceptanceProfile: profile,
+      },
+      turns,
+    })
+    await saveTranscript(transcript)
+    send('step', { id: 'generate', status: 'done' })
+
+    const result = await evaluateTranscript(transcript, undefined, (event) => {
+      if (event.phase === 'rules') {
+        if (event.status === 'start') send('step', { id: 'finalize', status: 'start' })
+      } else {
+        send('step', { id: event.phase, status: event.status })
+      }
+    })
+    await saveResult(result)
+    send('step', { id: 'finalize', status: 'done' })
+
+    send('done', { call: transcript, result })
+    res.end()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Transcript generation failed'
+    send('error', { error: message })
+    res.end()
   }
 })
 

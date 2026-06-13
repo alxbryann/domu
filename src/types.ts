@@ -47,6 +47,25 @@ export interface RuleViolation {
   severity: 'none' | 'low' | 'medium' | 'high' | 'critical'
 }
 
+export interface CrossJudgeScoreDelta {
+  criterionId: string
+  primaryScore: number
+  secondaryScore: number | null
+  delta: number | null
+}
+
+export interface CrossJudgeReport {
+  provider: 'deepseek' | 'anthropic'
+  judgeVersion: string
+  compliancePass: boolean
+  overallPass: boolean
+  weightedScore: number
+  agreement: boolean
+  maxScoreDelta: number
+  scoreDeltas: CrossJudgeScoreDelta[]
+  summary: string
+}
+
 export interface EvalResult {
   id: string
   transcriptId: string
@@ -56,6 +75,7 @@ export interface EvalResult {
   criteria: CriterionResult[]
   ruleViolations: RuleViolation[]
   judgeDisagreement: boolean
+  crossJudge?: CrossJudgeReport
   weightedScore: number
   overallPass: boolean
   compliancePass: boolean

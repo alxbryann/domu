@@ -8,6 +8,7 @@ import { SectionLabel } from '../design-system/components/SectionLabel'
 import { VapiLiveCallPanel } from '../components/VapiLiveCallPanel'
 import { GenerateCallPanel } from '../components/GenerateCallPanel'
 import { api } from '../lib/api'
+import { downloadCallReport } from '../lib/call-report'
 import type { CallStatus, CallWithResult } from '../types'
 
 type Filter = 'all' | CallStatus
@@ -26,6 +27,7 @@ const STATUS_VARIANT: Record<CallStatus, 'success' | 'warning' | 'neutral' | 'da
 
 export function CallsPage() {
   const [calls, setCalls] = useState<CallWithResult[]>([])
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>('all')
   const [error, setError] = useState('')
   const [importError, setImportError] = useState('')
@@ -40,7 +42,9 @@ export function CallsPage() {
   }
 
   useEffect(() => {
-    loadCalls().catch((e) => setError(e.message))
+    loadCalls()
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
     const interval = setInterval(() => {
       loadCalls().catch(() => {})
     }, 5000)
@@ -174,6 +178,7 @@ export function CallsPage() {
       <div className="rounded-domu-lg bg-app-card border border-app-border p-5 transition-colors">
         <DataTable<CallWithResult>
           data={filtered}
+          loading={loading}
           emptyMessage="No calls yet. Start a live Vapi call or import a Vapi export JSON."
           onRowClick={(c) => navigate(`/calls/${c.id}`)}
           columns={[
@@ -243,32 +248,57 @@ export function CallsPage() {
             {
               key: 'actions',
               header: '',
-              className: 'w-12',
+              className: 'w-20',
               render: (c) =>
                 c.status === 'live' ? null : (
-                  <button
-                    type="button"
-                    aria-label={`Delete call ${c.id}`}
-                    disabled={deletingId === c.id}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      void handleDeleteCall(c)
-                    }}
-                    className="p-1.5 rounded-domu-md text-app-muted hover:text-domu-danger hover:bg-domu-danger/10 transition-colors disabled:opacity-50"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label={`Download report for call ${c.id}`}
+                      title="Descargar reporte (Word)"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        downloadCallReport(c, c.result)
+                      }}
+                      className="p-1.5 rounded-domu-md text-app-muted hover:text-domu-blue hover:bg-domu-blue/10 transition-colors"
                     >
-                      <path d="M2 4h12M5.5 4V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1M6.5 7v5M9.5 7v5M3.5 4l.5 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l.5-9" />
-                    </svg>
-                  </button>
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <path d="M8 2v8m0 0L5 7m3 3 3-3M3 13h10" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete call ${c.id}`}
+                      disabled={deletingId === c.id}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        void handleDeleteCall(c)
+                      }}
+                      className="p-1.5 rounded-domu-md text-app-muted hover:text-domu-danger hover:bg-domu-danger/10 transition-colors disabled:opacity-50"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <path d="M2 4h12M5.5 4V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1M6.5 7v5M9.5 7v5M3.5 4l.5 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l.5-9" />
+                      </svg>
+                    </button>
+                  </div>
                 ),
             },
           ]}

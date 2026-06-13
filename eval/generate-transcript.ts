@@ -23,6 +23,11 @@ function getGeneratorConfig() {
   return null
 }
 
+/** Which model will write the synthetic transcript, for surfacing in the UI. */
+export function getGeneratorProvider(): 'deepseek' | 'anthropic' | null {
+  return getGeneratorConfig()?.provider ?? null
+}
+
 const SYSTEM_PROMPT = `You generate realistic SYNTHETIC debt-collection call transcripts used as test fixtures for Domu's QA evaluation system. These are never placed to real people — their only purpose is to test whether an automated evaluator correctly catches good and bad agent behavior.
 
 Write a transcript that matches the requested scenario:

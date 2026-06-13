@@ -23,6 +23,7 @@ type EvalResultRow = {
   criteria: EvalResult['criteria']
   rule_violations: EvalResult['ruleViolations']
   judge_disagreement: boolean
+  cross_judge: EvalResult['crossJudge'] | null
   weighted_score: number
   overall_pass: boolean
   compliance_pass: boolean
@@ -60,6 +61,7 @@ function rowToResult(row: EvalResultRow): EvalResult {
     criteria: row.criteria ?? [],
     ruleViolations: row.rule_violations ?? [],
     judgeDisagreement: row.judge_disagreement,
+    crossJudge: row.cross_judge ?? undefined,
     weightedScore: Number(row.weighted_score),
     overallPass: row.overall_pass,
     compliancePass: row.compliance_pass,
@@ -78,6 +80,7 @@ function resultToRow(result: EvalResult): EvalResultRow {
     criteria: result.criteria,
     rule_violations: result.ruleViolations,
     judge_disagreement: result.judgeDisagreement,
+    cross_judge: result.crossJudge ?? null,
     weighted_score: result.weightedScore,
     overall_pass: result.overallPass,
     compliance_pass: result.compliancePass,

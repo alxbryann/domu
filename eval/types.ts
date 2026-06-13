@@ -26,6 +26,28 @@ export const RuleViolationSchema = z.object({
 
 export type RuleViolation = z.infer<typeof RuleViolationSchema>
 
+export const CrossJudgeScoreDeltaSchema = z.object({
+  criterionId: z.string(),
+  primaryScore: z.number(),
+  secondaryScore: z.number().nullable(),
+  delta: z.number().nullable(),
+})
+
+// Independent second-judge cross-check of the canonical (primary) verdict.
+export const CrossJudgeReportSchema = z.object({
+  provider: z.enum(['deepseek', 'anthropic']),
+  judgeVersion: z.string(),
+  compliancePass: z.boolean(),
+  overallPass: z.boolean(),
+  weightedScore: z.number(),
+  agreement: z.boolean(),
+  maxScoreDelta: z.number(),
+  scoreDeltas: z.array(CrossJudgeScoreDeltaSchema),
+  summary: z.string(),
+})
+
+export type CrossJudgeReport = z.infer<typeof CrossJudgeReportSchema>
+
 export const TranscriptTurnSchema = z.object({
   speaker: z.enum(['agent', 'customer', 'system']),
   text: z.string(),
@@ -66,6 +88,7 @@ export const EvalResultSchema = z.object({
   criteria: z.array(CriterionResultSchema),
   ruleViolations: z.array(RuleViolationSchema),
   judgeDisagreement: z.boolean(),
+  crossJudge: CrossJudgeReportSchema.optional(),
   weightedScore: z.number(),
   overallPass: z.boolean(),
   compliancePass: z.boolean(),
