@@ -47,8 +47,10 @@ export const TranscriptSchema = z.object({
     description: z.string().optional(),
     callType: z.string().optional(),
     recordingUrl: z.string().optional(),
+    recordingStoragePath: z.string().optional(),
     expectedLabel: z.enum(['good', 'bad', 'edge']).optional(),
     acceptanceProfile: CallAcceptanceProfileSchema.optional(),
+    sentEscalationAlerts: z.array(z.string()).optional(),
   }),
   turns: z.array(TranscriptTurnSchema),
 })

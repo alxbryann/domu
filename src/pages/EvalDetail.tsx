@@ -28,6 +28,8 @@ export function EvalDetailPage() {
   const [profile, setProfile] = useState<CallAcceptanceProfile>(DEFAULT_ACCEPTANCE_PROFILE)
   const [profileSaving, setProfileSaving] = useState(false)
   const [profileDirty, setProfileDirty] = useState(false)
+  const [recordingUrl, setRecordingUrl] = useState<string | null>(null)
+  const [recordingError, setRecordingError] = useState('')
 
   useEffect(() => {
     if (!id) return
@@ -46,6 +48,32 @@ export function EvalDetailPage() {
     const interval = setInterval(load, 5000)
     return () => clearInterval(interval)
   }, [id, profileDirty])
+
+  useEffect(() => {
+    if (!id || !call?.metadata.recordingStoragePath) {
+      setRecordingUrl(null)
+      return
+    }
+
+    let cancelled = false
+    setRecordingError('')
+
+    api
+      .getCallRecordingUrl(id)
+      .then(({ url }) => {
+        if (!cancelled) setRecordingUrl(url)
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setRecordingUrl(null)
+          setRecordingError(e instanceof Error ? e.message : 'Failed to load recording')
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, call?.metadata.recordingStoragePath])
 
   async function saveProfile() {
     if (!id) return
@@ -148,6 +176,21 @@ export function EvalDetailPage() {
           title="Compliance Failure"
           message={result.summary}
         />
+      )}
+
+      {(recordingUrl || call.metadata.recordingStoragePath) && (
+        <div className="rounded-domu-lg bg-app-card border border-app-border p-5 transition-colors">
+          <SectionLabel variant="outline">Call recording</SectionLabel>
+          {recordingUrl ? (
+            <audio controls preload="metadata" className="mt-3 w-full" src={recordingUrl}>
+              Your browser does not support audio playback.
+            </audio>
+          ) : (
+            <p className="text-xs text-app-muted mt-3">
+              {recordingError || 'Processing recording…'}
+            </p>
+          )}
+        </div>
       )}
 
       {result && (

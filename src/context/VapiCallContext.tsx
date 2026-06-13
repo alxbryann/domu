@@ -38,6 +38,33 @@ interface VapiTranscriptMessage {
   time?: number
 }
 
+interface VapiConversationMessage {
+  role?: string
+  message?: string
+  time?: number
+}
+
+function conversationMessagesToEntries(
+  messages: VapiConversationMessage[],
+): VapiTranscriptMessage[] {
+  return messages
+    .filter((message) => {
+      const role = (message.role ?? '').toLowerCase()
+      return (
+        (role === 'user' || role === 'bot' || role === 'assistant') &&
+        Boolean(message.message?.trim())
+      )
+    })
+    .map((message) => {
+      const role = (message.role ?? '').toLowerCase()
+      return {
+        role: role === 'user' ? 'user' : 'assistant',
+        message: message.message!.trim(),
+        time: message.time ?? Date.now(),
+      }
+    })
+}
+
 function messageToTurn(message: VapiTranscriptMessage): TranscriptTurn | null {
   const text = message.message?.trim()
   if (!text) return null
@@ -74,12 +101,16 @@ interface VapiCallContextValue {
   isActive: boolean
   isMicMuted: boolean
   isPushToTalkActive: boolean
+  isChatMode: boolean
   acceptanceProfile: CallAcceptanceProfile
   profileSaving: boolean
   startCall: () => Promise<void>
   endCall: () => void
   startTalking: () => void
   stopTalking: () => void
+  openChatMode: () => void
+  closeChatMode: () => void
+  sendTextMessage: (text: string) => void
   setAcceptanceProfile: (profile: CallAcceptanceProfile) => void
   saveAcceptanceProfile: () => Promise<void>
 }
@@ -100,6 +131,7 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
   const [elapsedSec, setElapsedSec] = useState(0)
   const [isMicMuted, setIsMicMuted] = useState(true)
   const [isPushToTalkActive, setIsPushToTalkActive] = useState(false)
+  const [isChatMode, setIsChatMode] = useState(false)
   const [acceptanceProfile, setAcceptanceProfileState] = useState<CallAcceptanceProfile>(
     () => loadStoredProfile(),
   )
@@ -114,6 +146,8 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
   const assistantIdRef = useRef<string | null>(null)
   const metricsRef = useRef(createLiveMonitorMetrics(null))
   const listenersBoundRef = useRef(false)
+  const finalizingRef = useRef(false)
+  const endFallbackTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     api
@@ -144,6 +178,45 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
     [],
   )
 
+  const clearEndFallbackTimer = useCallback(() => {
+    if (endFallbackTimerRef.current !== null) {
+      window.clearTimeout(endFallbackTimerRef.current)
+      endFallbackTimerRef.current = null
+    }
+  }, [])
+
+  const finalizeEndedCall = useCallback(async () => {
+    if (finalizingRef.current) return
+    finalizingRef.current = true
+    clearEndFallbackTimer()
+
+    const id = callIdRef.current
+    setState('ending')
+
+    try {
+      if (id) await syncCall('call.ended')
+      setState('idle')
+      setCallId(null)
+      setTurns([])
+      setIsSpeaking(false)
+      setSpeakingRole(null)
+      setVolumeLevel(0)
+      setIsMicMuted(true)
+      setIsPushToTalkActive(false)
+      setIsChatMode(false)
+      if (id) navigate(`/calls/${id}`, { replace: true })
+    } catch (e) {
+      setState('error')
+      setError(e instanceof Error ? e.message : 'Failed to sync call')
+    } finally {
+      callIdRef.current = null
+      messagesRef.current = []
+      startedAtRef.current = null
+      metricsRef.current = createLiveMonitorMetrics(null)
+      finalizingRef.current = false
+    }
+  }, [clearEndFallbackTimer, navigate, syncCall])
+
   const setMicMuted = useCallback((muted: boolean) => {
     vapiRef.current?.setMuted(muted)
     setIsMicMuted(muted)
@@ -161,6 +234,30 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
     setIsMicMuted(true)
     setIsPushToTalkActive(false)
   }, [])
+
+  const openChatMode = useCallback(() => {
+    setIsChatMode(true)
+    stopTalking()
+  }, [stopTalking])
+
+  const closeChatMode = useCallback(() => {
+    setIsChatMode(false)
+    stopTalking()
+  }, [stopTalking])
+
+  const sendTextMessage = useCallback(
+    (text: string) => {
+      const trimmed = text.trim()
+      if (!trimmed || !vapiRef.current) return
+
+      vapiRef.current.send({
+        type: 'add-message',
+        message: { role: 'user', content: trimmed },
+        triggerResponseEnabled: true,
+      })
+    },
+    [],
+  )
 
   const setAcceptanceProfile = useCallback((profile: CallAcceptanceProfile) => {
     setAcceptanceProfileState(profile)
@@ -244,6 +341,30 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
           return
         }
 
+        if (message.type === 'conversation-update' && Array.isArray(message.messages)) {
+          const entries = conversationMessagesToEntries(message.messages)
+          if (entries.length === 0) return
+
+          messagesRef.current = entries
+          const nextTurns = messagesToTurns(entries)
+          setTurns(nextTurns)
+
+          const lastEntry = entries[entries.length - 1]
+          const lastTurn = messageToTurn(lastEntry)
+          if (lastTurn && (lastTurn.speaker === 'agent' || lastTurn.speaker === 'customer')) {
+            metricsRef.current = recordTurnLatency(
+              metricsRef.current,
+              lastTurn.speaker,
+              lastEntry.time,
+            )
+          }
+
+          setIsSpeaking(false)
+          setSpeakingRole(null)
+          void syncCall('call.updated')
+          return
+        }
+
         if (message.type !== 'transcript') return
         if (message.transcriptType && message.transcriptType !== 'final') return
         if (!message.transcript?.trim()) return
@@ -268,30 +389,7 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
       })
 
       vapi.on('call-end', () => {
-        const id = callIdRef.current
-        setState('ending')
-        void syncCall('call.ended')
-          .then(() => {
-            setState('idle')
-            setCallId(null)
-            setTurns([])
-            setIsSpeaking(false)
-            setSpeakingRole(null)
-            setVolumeLevel(0)
-            setIsMicMuted(true)
-            setIsPushToTalkActive(false)
-            if (id) navigate(`/calls/${id}`, { replace: true })
-          })
-          .catch((e) => {
-            setState('error')
-            setError(e instanceof Error ? e.message : 'Failed to sync call')
-          })
-          .finally(() => {
-            callIdRef.current = null
-            messagesRef.current = []
-            startedAtRef.current = null
-            metricsRef.current = createLiveMonitorMetrics(null)
-          })
+        void finalizeEndedCall()
       })
 
       vapi.on('error', (err) => {
@@ -299,7 +397,7 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
         setError(err instanceof Error ? err.message : 'Vapi error')
       })
     },
-    [beginLiveCall, navigate, syncCall],
+    [beginLiveCall, finalizeEndedCall, syncCall],
   )
 
   useEffect(() => {
@@ -375,10 +473,21 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
   }, [config, beginLiveCall, bindVapiListeners])
 
   const endCall = useCallback(() => {
-    if (!vapiRef.current) return
+    const vapi = vapiRef.current
+    const id = callIdRef.current
+    if (!vapi || !id || state === 'ending' || state === 'idle') return
+
     setState('ending')
-    void vapiRef.current.stop()
-  }, [])
+    clearEndFallbackTimer()
+    vapi.end()
+
+    endFallbackTimerRef.current = window.setTimeout(() => {
+      endFallbackTimerRef.current = null
+      if (callIdRef.current === id) {
+        void finalizeEndedCall()
+      }
+    }, 2500)
+  }, [clearEndFallbackTimer, finalizeEndedCall, state])
 
   const isConfigured = Boolean(config?.publicKey && config?.assistantId)
   const isActive = state === 'connecting' || state === 'live' || state === 'ending'
@@ -400,12 +509,16 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
         isActive,
         isMicMuted,
         isPushToTalkActive,
+        isChatMode,
         acceptanceProfile,
         profileSaving,
         startCall,
         endCall,
         startTalking,
         stopTalking,
+        openChatMode,
+        closeChatMode,
+        sendTextMessage,
         setAcceptanceProfile,
         saveAcceptanceProfile,
       }}

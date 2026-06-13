@@ -91,6 +91,7 @@ export function buildTranscript(
       description: call.description ?? existing?.metadata.description,
       callType: call.callType ?? existing?.metadata.callType,
       recordingUrl: call.recordingUrl ?? existing?.metadata.recordingUrl,
+      recordingStoragePath: existing?.metadata.recordingStoragePath,
       acceptanceProfile: call.acceptanceProfile ?? existing?.metadata.acceptanceProfile,
     },
     turns: mergedTurns,

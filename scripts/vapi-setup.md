@@ -17,6 +17,7 @@ Add to `.env`:
 
 ```
 VAPI_PUBLIC_KEY=your-public-key      # Dashboard → API Keys → Public
+VAPI_PRIVATE_KEY=your-private-key    # Dashboard → API Keys → Private (for recording fetch)
 VAPI_ASSISTANT_ID=your-assistant-id  # Dashboard → Assistants → copy ID
 ```
 

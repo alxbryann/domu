@@ -3,9 +3,9 @@ import { SidebarNav } from './SidebarNav'
 
 export function AppShell() {
   return (
-    <div className="flex min-h-screen bg-app-bg transition-colors">
+    <div className="flex h-screen overflow-hidden bg-app-bg transition-colors">
       <SidebarNav />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
     </div>

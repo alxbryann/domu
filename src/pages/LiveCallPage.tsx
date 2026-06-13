@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { CallChatInput } from '../components/CallChatInput'
 import { LiveMonitorPanel } from '../components/LiveMonitorPanel'
 import { AcceptanceProfileEditor } from '../components/AcceptanceProfileEditor'
 import { VoicePulse } from '../components/VoicePulse'
@@ -25,11 +26,15 @@ export function LiveCallPage() {
     liveMonitor,
     isMicMuted,
     isPushToTalkActive,
+    isChatMode,
     acceptanceProfile,
     profileSaving,
     endCall,
     startTalking,
     stopTalking,
+    openChatMode,
+    closeChatMode,
+    sendTextMessage,
     setAcceptanceProfile,
     saveAcceptanceProfile,
   } = useVapiCall()
@@ -37,9 +42,9 @@ export function LiveCallPage() {
   const isThisCall = callId === id
   const isLive = isThisCall && (state === 'live' || state === 'connecting' || state === 'ending')
   const waitingForSession = state === 'connecting' && !callId
-  const pushToTalkEnabled = isThisCall && state === 'live'
+  const pushToTalkEnabled = isThisCall && state === 'live' && !isChatMode
 
-  usePushToTalk(pushToTalkEnabled, startTalking, stopTalking)
+  usePushToTalk(pushToTalkEnabled, startTalking, stopTalking, openChatMode)
 
   useEffect(() => {
     if (isThisCall || state !== 'idle') return
@@ -102,29 +107,49 @@ export function LiveCallPage() {
               className="mt-8"
             />
             {state === 'live' && (
-              <div className="mt-8 text-center space-y-2">
-                <div
-                  className={[
-                    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                    isPushToTalkActive
-                      ? 'bg-domu-success/15 text-domu-success border border-domu-success/30'
-                      : isMicMuted
-                        ? 'bg-app-card text-app-muted border border-app-border'
-                        : 'bg-domu-blue/10 text-domu-blue border border-domu-blue/30',
-                  ].join(' ')}
-                >
-                  <kbd className="rounded bg-app-bg px-2 py-0.5 text-xs font-mono border border-app-border">
-                    Space
-                  </kbd>
-                  <span>
-                    {isPushToTalkActive
-                      ? 'Escuchando… suelta para pausar'
-                      : 'Mantén presionado para hablar'}
-                  </span>
-                </div>
-                <p className="text-xs text-app-muted">
-                  El micrófono está silenciado hasta que presiones espacio
-                </p>
+              <div className="mt-8 text-center space-y-2 w-full px-4">
+                {isChatMode ? (
+                  <CallChatInput
+                    onSend={sendTextMessage}
+                    onClose={closeChatMode}
+                    disabled={state !== 'live'}
+                  />
+                ) : (
+                  <>
+                    <div
+                      className={[
+                        'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+                        isPushToTalkActive
+                          ? 'bg-domu-success/15 text-domu-success border border-domu-success/30'
+                          : isMicMuted
+                            ? 'bg-app-card text-app-muted border border-app-border'
+                            : 'bg-domu-blue/10 text-domu-blue border border-domu-blue/30',
+                      ].join(' ')}
+                    >
+                      <kbd className="rounded bg-app-bg px-2 py-0.5 text-xs font-mono border border-app-border">
+                        Space
+                      </kbd>
+                      <span>
+                        {isPushToTalkActive
+                          ? 'Escuchando… suelta para pausar'
+                          : 'Mantén presionado para hablar'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-app-muted">
+                      El micrófono está silenciado hasta que presiones espacio.
+                      {' '}
+                      <button
+                        type="button"
+                        onClick={openChatMode}
+                        className="text-domu-blue hover:underline"
+                      >
+                        Doble espacio
+                      </button>
+                      {' '}
+                      o clic aquí para escribir.
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -164,6 +189,7 @@ export function LiveCallPage() {
               onSave={() => saveAcceptanceProfile()}
               saving={profileSaving}
               compact
+              lockInputs={state === 'live'}
               disabled={state === 'ending'}
             />
           </div>

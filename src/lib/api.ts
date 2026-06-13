@@ -45,6 +45,7 @@ export const api = {
   getCalls: () => fetchJson<CallWithResult[]>('/calls'),
   getCall: (id: string) =>
     fetchJson<{ call: Transcript; result: EvalResult | null }>(`/calls/${id}`),
+  getCallRecordingUrl: (id: string) => fetchJson<{ url: string }>(`/calls/${id}/recording`),
   getVapiConfig: () => fetchJson<VapiConfig>('/vapi/config'),
   syncCall: (body: CallSyncPayload) =>
     fetchJson<{ call: Transcript; result: EvalResult | null }>('/calls/sync', {

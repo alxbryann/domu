@@ -95,6 +95,7 @@ In production, Domu's orchestrator sends webhooks directly — no manual import 
 |-------|----------|
 | `calls` | Transcript, status, metadata, turns |
 | `eval_results` | LLM judge scores per call |
+| Storage bucket `call-recordings` | Call audio (uploaded on `call.ended`) |
 
 Local `data/transcripts/` and `data/results/` are not used at runtime. Use `npm run migrate:json-to-supabase` only once if you need to import legacy JSON files.
 
@@ -102,7 +103,11 @@ Local `data/transcripts/` and `data/results/` are not used at runtime. Use `npm 
 
 ```bash
 supabase link --project-ref <your-project-ref>
-supabase db query --linked -f supabase/migrations/20260612234000_calls_storage.sql
+supabase db push
+
+# Or apply migrations manually:
+# supabase db query --linked -f supabase/migrations/20260612234000_calls_storage.sql
+# supabase db query --linked -f supabase/migrations/20260613010000_call_recordings_bucket.sql
 
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
@@ -117,6 +122,7 @@ ANTHROPIC_API_KEY=your-key-here
 PORT=3001
 WEBHOOK_SECRET=optional-bearer-token-for-webhooks
 VAPI_PUBLIC_KEY=your-vapi-public-key
+VAPI_PRIVATE_KEY=your-vapi-private-key
 VAPI_ASSISTANT_ID=your-assistant-id
 ```
 

@@ -76,9 +76,16 @@ export function VapiLiveCallPanel() {
           <button
             type="button"
             onClick={() => setShowProfile((v) => !v)}
-            className="text-sm font-medium text-app-text hover:text-domu-blue mb-3"
+            className="flex items-center gap-1.5 text-sm font-medium text-app-text hover:text-domu-blue mb-3 transition-colors"
           >
-            {showProfile ? '▼' : '▶'} Acceptance profile & ground truth
+            <svg
+              width="14" height="14" viewBox="0 0 14 14" fill="none"
+              stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              className={`transition-transform ${showProfile ? 'rotate-90' : ''}`}
+            >
+              <path d="M5 3l4 4-4 4" />
+            </svg>
+            Acceptance profile & ground truth
           </button>
           {showProfile && (
             <AcceptanceProfileEditor

@@ -26,6 +26,28 @@ export type GroundTruthFact = z.infer<typeof GroundTruthFactSchema>
 export type AcceptanceRule = z.infer<typeof AcceptanceRuleSchema>
 export type CallAcceptanceProfile = z.infer<typeof CallAcceptanceProfileSchema>
 
+export function isCustomAcceptanceRule(id: string): boolean {
+  return id.startsWith('custom-')
+}
+
+export function createCustomAcceptanceRule(
+  label: string,
+  description: string,
+  category: AcceptanceRule['category'] = 'procedure',
+): AcceptanceRule {
+  const suffix =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : String(Date.now())
+  return {
+    id: `custom-${suffix}`,
+    label: label.trim(),
+    description: description.trim(),
+    enabled: true,
+    category,
+  }
+}
+
 export interface FactCheckResult {
   factId: string
   label: string

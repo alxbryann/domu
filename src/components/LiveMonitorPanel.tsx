@@ -83,13 +83,23 @@ export function LiveMonitorPanel({ monitor, elapsedSec, lastLatencyMs }: LiveMon
             <ComplianceAlert
               key={alert.id}
               variant={
-                alert.severity === 'critical' || alert.severity === 'high'
+                alert.type === 'escalation' ||
+                alert.severity === 'critical' ||
+                alert.severity === 'high'
                   ? 'danger'
                   : alert.severity === 'medium'
                     ? 'warning'
                     : 'info'
               }
-              title={alert.type === 'latency' ? 'Latency' : alert.type === 'compliance' ? 'Compliance' : 'Quality'}
+              title={
+                alert.type === 'escalation'
+                  ? 'Escalation — email sent'
+                  : alert.type === 'latency'
+                    ? 'Latency'
+                    : alert.type === 'compliance'
+                      ? 'Compliance'
+                      : 'Quality'
+              }
               message={alert.message}
             />
           ))}

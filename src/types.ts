@@ -21,8 +21,10 @@ export interface Transcript {
     description?: string
     callType?: string
     recordingUrl?: string
+    recordingStoragePath?: string
     expectedLabel?: 'good' | 'bad' | 'edge'
     acceptanceProfile?: CallAcceptanceProfile
+    sentEscalationAlerts?: string[]
   }
   turns: TranscriptTurn[]
 }

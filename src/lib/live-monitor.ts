@@ -1,8 +1,9 @@
 import type { CallAcceptanceProfile, FactCheckResult } from '../../shared/acceptance-profile'
 import { checkGroundTruthFacts } from '../../shared/acceptance-profile'
+import { detectEscalationInTurns } from '../../shared/escalation-triggers'
 import type { RuleViolation, TranscriptTurn } from '../types'
 
-export type LiveAlertType = 'compliance' | 'latency' | 'quality' | 'system'
+export type LiveAlertType = 'compliance' | 'latency' | 'quality' | 'system' | 'escalation'
 export type LiveAlertSeverity = 'low' | 'medium' | 'high' | 'critical'
 
 export interface LiveAlert {
@@ -244,7 +245,21 @@ function buildRules(
   ]
 
   if (!profile) return allRules
-  return allRules.filter((rule) => isRuleEnabled(profile, rule.id))
+
+  const builtIn = allRules.filter((rule) => isRuleEnabled(profile, rule.id))
+  const builtInIds = new Set(allRules.map((rule) => rule.id))
+  const custom = profile.rules
+    .filter((rule) => rule.enabled && !builtInIds.has(rule.id))
+    .map(
+      (rule): LiveRuleCheck => ({
+        id: rule.id,
+        label: rule.label,
+        status: turns.length < 1 ? 'pending' : 'pending',
+        detail: 'Custom rule — evaluated post-call by judge',
+      }),
+    )
+
+  return [...builtIn, ...custom]
 }
 
 function buildAlerts(
@@ -334,6 +349,16 @@ function buildAlerts(
       type: 'quality',
       severity: 'high',
       message: `${check.label}: ${check.detail}`,
+      timestamp: now,
+    })
+  }
+
+  for (const trigger of detectEscalationInTurns(turns)) {
+    alerts.push({
+      id: `escalation-${trigger.id}-${trigger.turnIndex}`,
+      type: 'escalation',
+      severity: trigger.severity,
+      message: `${trigger.label} — "${trigger.matchedText}" (${trigger.speaker}: ${trigger.quote.slice(0, 120)}${trigger.quote.length > 120 ? '…' : ''})`,
       timestamp: now,
     })
   }

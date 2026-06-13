@@ -12,6 +12,7 @@ import {
   loadTranscript,
   saveTranscript,
 } from './call-store.js'
+import { getRecordingSignedUrl } from './call-recording.js'
 import { isSupabaseConfigured } from './supabase.js'
 
 config()
@@ -74,6 +75,24 @@ app.get('/api/calls/:id', async (req, res) => {
     res.json({ call: transcript, result: await loadResult(transcript.id) })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to load call'
+    res.status(500).json({ error: message })
+  }
+})
+
+app.get('/api/calls/:id/recording', async (req, res) => {
+  try {
+    const transcript = await loadTranscript(req.params.id)
+    if (!transcript) return res.status(404).json({ error: 'Call not found' })
+
+    const storagePath = transcript.metadata.recordingStoragePath
+    if (!storagePath) {
+      return res.status(404).json({ error: 'Recording not available yet' })
+    }
+
+    const url = await getRecordingSignedUrl(storagePath)
+    res.json({ url })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to load recording'
     res.status(500).json({ error: message })
   }
 })

@@ -2,7 +2,9 @@ import { evaluateTranscript } from '../eval/judge.js'
 import { buildTranscript, type CallWebhookPayload } from '../eval/call-ingest.js'
 import { parseCallsExport } from '../eval/call-export-parse.js'
 import { TranscriptSchema, type Transcript, type EvalResult } from '../eval/types.js'
+import { persistCallRecording } from './call-recording.js'
 import { getSupabase } from './supabase.js'
+import { applyEscalationAlerts } from './escalation-alerts.js'
 
 type CallRow = {
   id: string
@@ -145,12 +147,16 @@ export async function ingestCallEvent(payload: CallWebhookPayload): Promise<{
   result: EvalResult | null
 }> {
   const existing = await loadTranscript(payload.call.id)
-  const transcript = buildTranscript(payload, existing ?? undefined)
+  let transcript = buildTranscript(payload, existing ?? undefined)
+  transcript = await applyEscalationAlerts(existing, transcript)
   await saveTranscript(transcript)
 
   if (payload.event !== 'call.ended') {
     return { transcript, result: await loadResult(transcript.id) }
   }
+
+  transcript = await persistCallRecording(transcript)
+  await saveTranscript(transcript)
 
   if (transcript.turns.length === 0) {
     const completed: Transcript = { ...transcript, status: 'completed' }

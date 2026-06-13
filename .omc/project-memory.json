@@ -1,0 +1,391 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1781309465921,
+  "projectRoot": "/Users/bryanriano/Desktop/domu",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "express",
+        "version": "5.2.1",
+        "category": "backend"
+      },
+      {
+        "name": "react",
+        "version": "19.2.6",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.6",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "8.0.12",
+        "category": "build"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+      "dev:client": "vite",
+      "dev:server": "tsx watch server/index.ts",
+      "build": "tsc -b && vite build",
+      "lint": "eslint .",
+      "preview": "vite preview",
+      "eval": "tsx eval/run.ts",
+      "eval:all": "tsx eval/run.ts --all",
+      "eval:validate": "tsx eval/run.ts --validate",
+      "import:vapi": "tsx scripts/import-vapi.ts",
+      "migrate:json-to-supabase": "tsx scripts/migrate-json-to-supabase.ts",
+      "db:push": "supabase db push",
+      "db:query": "supabase db query --linked"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public",
+      "scripts",
+      "src"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "data": {
+      "path": "data",
+      "purpose": "Data files",
+      "fileCount": 0,
+      "lastAccessed": 1781309465909,
+      "keyFiles": []
+    },
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 4,
+      "lastAccessed": 1781309465909,
+      "keyFiles": [
+        "domu-logo.webp",
+        "favicon.svg",
+        "icons.svg",
+        "index.html"
+      ]
+    },
+    "eval": {
+      "path": "eval",
+      "purpose": null,
+      "fileCount": 9,
+      "lastAccessed": 1781309465911,
+      "keyFiles": [
+        "call-export-parse.ts",
+        "call-ingest.ts",
+        "criteria.ts",
+        "index.ts",
+        "judge.ts"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 3,
+      "lastAccessed": 1781309465911,
+      "keyFiles": [
+        "domu-logo.webp",
+        "favicon.svg",
+        "icons.svg"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 3,
+      "lastAccessed": 1781309465912,
+      "keyFiles": [
+        "import-vapi.ts",
+        "migrate-json-to-supabase.ts",
+        "vapi-setup.md"
+      ]
+    },
+    "server": {
+      "path": "server",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1781309465912,
+      "keyFiles": [
+        "call-store.ts",
+        "email-alerts.ts",
+        "escalation-alerts.ts",
+        "index.ts",
+        "supabase.ts"
+      ]
+    },
+    "shared": {
+      "path": "shared",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1781309465912,
+      "keyFiles": [
+        "acceptance-profile.ts",
+        "escalation-triggers.ts"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 4,
+      "lastAccessed": 1781309465912,
+      "keyFiles": [
+        "App.tsx",
+        "index.css",
+        "main.tsx",
+        "types.ts"
+      ]
+    },
+    "supabase": {
+      "path": "supabase",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1781309465912,
+      "keyFiles": [
+        "config.toml"
+      ]
+    },
+    "dist/assets": {
+      "path": "dist/assets",
+      "purpose": "Static assets",
+      "fileCount": 3,
+      "lastAccessed": 1781309465912,
+      "keyFiles": [
+        "index-0Rf290JH.js",
+        "index-UerWKX4u.css",
+        "vapi-Bh67Y0mQ.js"
+      ]
+    },
+    "src/assets": {
+      "path": "src/assets",
+      "purpose": "Static assets",
+      "fileCount": 3,
+      "lastAccessed": 1781309465913,
+      "keyFiles": [
+        "hero.png",
+        "react.svg",
+        "vite.svg"
+      ]
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 5,
+      "lastAccessed": 1781309465913,
+      "keyFiles": [
+        "AcceptanceProfileEditor.tsx",
+        "CallChatInput.tsx",
+        "LiveMonitorPanel.tsx"
+      ]
+    },
+    "src/lib": {
+      "path": "src/lib",
+      "purpose": "Library code",
+      "fileCount": 4,
+      "lastAccessed": 1781309465913,
+      "keyFiles": [
+        "api.ts",
+        "live-monitor.ts",
+        "vapi-client.ts"
+      ]
+    },
+    "supabase/migrations": {
+      "path": "supabase/migrations",
+      "purpose": "Database migrations",
+      "fileCount": 2,
+      "lastAccessed": 1781309465913,
+      "keyFiles": [
+        "20260612233717_calls_storage.sql",
+        "20260612234000_calls_storage.sql"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src/layout/AppShell.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1781309904405,
+      "type": "file"
+    },
+    {
+      "path": "src/layout/SidebarNav.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1781309918316,
+      "type": "file"
+    },
+    {
+      "path": "src/index.css",
+      "accessCount": 3,
+      "lastAccessed": 1781309672835,
+      "type": "file"
+    },
+    {
+      "path": "src/pages/LiveCallPage.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1781309677057,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/Button.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1781309677545,
+      "type": "file"
+    },
+    {
+      "path": "src/App.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1781309682906,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/Badge.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1781309800756,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/SectionLabel.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1781309806128,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/ThemeToggle.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1781309924878,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 2,
+      "lastAccessed": 1781309551046,
+      "type": "file"
+    },
+    {
+      "path": "src/components/LiveMonitorPanel.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1781309677600,
+      "type": "file"
+    },
+    {
+      "path": "src/pages/Overview.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1781309683198,
+      "type": "file"
+    },
+    {
+      "path": "src/pages/Calls.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1781309799948,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/Logo.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1781309811296,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/ComplianceAlert.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1781309932612,
+      "type": "file"
+    },
+    {
+      "path": "src/components/VapiLiveCallPanel.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1781309941456,
+      "type": "file"
+    },
+    {
+      "path": "src/main.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1781309533100,
+      "type": "file"
+    },
+    {
+      "path": "src/components/AcceptanceProfileEditor.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1781309535685,
+      "type": "file"
+    },
+    {
+      "path": "src/components/CallChatInput.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1781309537043,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1781309540535,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/Card.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1781309543313,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/HeroSection.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1781309543466,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/MetricCard.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1781309800414,
+      "type": "file"
+    },
+    {
+      "path": "src/design-system/components/DataTable.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1781309805792,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
