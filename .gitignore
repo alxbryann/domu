@@ -26,3 +26,4 @@ supabase/.temp
 # Legacy local call data (not used — Supabase is source of truth)
 data/transcripts/
 data/results/
+.vercel

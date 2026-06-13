@@ -18,6 +18,7 @@ import {
 } from '../lib/live-monitor'
 import { getVapiClient, isValidCallId } from '../lib/vapi-session'
 import type { VapiClient } from '../lib/vapi-client'
+import type { AssistantOverrides } from '@vapi-ai/web/dist/api'
 import type { TranscriptTurn } from '../types'
 import type { CallAcceptanceProfile } from '../../shared/acceptance-profile'
 import {
@@ -455,7 +456,10 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
         listenersBoundRef.current = true
       }
 
-      const webCall = await vapi.start(config.assistantId)
+      const assistantOverrides = (await api.getVapiCallOverrides(
+        acceptanceProfileRef.current,
+      )) as AssistantOverrides
+      const webCall = await vapi.start(config.assistantId, assistantOverrides)
       const id = webCall?.id
       if (isValidCallId(id)) {
         beginLiveCall(id)

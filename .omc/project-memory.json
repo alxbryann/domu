@@ -243,6 +243,12 @@
   },
   "hotPaths": [
     {
+      "path": "src/pages/LiveCallPage.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1781310284926,
+      "type": "file"
+    },
+    {
       "path": "src/layout/AppShell.tsx",
       "accessCount": 4,
       "lastAccessed": 1781309904405,
@@ -256,14 +262,8 @@
     },
     {
       "path": "src/index.css",
-      "accessCount": 3,
-      "lastAccessed": 1781309672835,
-      "type": "file"
-    },
-    {
-      "path": "src/pages/LiveCallPage.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1781309677057,
+      "accessCount": 4,
+      "lastAccessed": 1781310728921,
       "type": "file"
     },
     {
@@ -294,6 +294,12 @@
       "path": "src/design-system/components/ThemeToggle.tsx",
       "accessCount": 3,
       "lastAccessed": 1781309924878,
+      "type": "file"
+    },
+    {
+      "path": "server/index.ts",
+      "accessCount": 3,
+      "lastAccessed": 1781311276345,
       "type": "file"
     },
     {
@@ -336,6 +342,12 @@
       "path": "src/components/VapiLiveCallPanel.tsx",
       "accessCount": 2,
       "lastAccessed": 1781309941456,
+      "type": "file"
+    },
+    {
+      "path": "src/components/VoicePulse.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1781310750772,
       "type": "file"
     },
     {
@@ -384,6 +396,30 @@
       "path": "src/design-system/components/DataTable.tsx",
       "accessCount": 1,
       "lastAccessed": 1781309805792,
+      "type": "file"
+    },
+    {
+      "path": ".claude/launch.json",
+      "accessCount": 1,
+      "lastAccessed": 1781309978469,
+      "type": "file"
+    },
+    {
+      "path": "server/app.ts",
+      "accessCount": 1,
+      "lastAccessed": 1781311259860,
+      "type": "file"
+    },
+    {
+      "path": "api/index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1781311280147,
+      "type": "file"
+    },
+    {
+      "path": "vercel.json",
+      "accessCount": 1,
+      "lastAccessed": 1781311281245,
       "type": "file"
     }
   ],

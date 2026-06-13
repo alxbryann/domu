@@ -22,6 +22,15 @@ export interface VapiConfig {
   assistantId: string
 }
 
+export interface VapiCallOverrides {
+  variableValues: Record<string, string>
+  model?: {
+    provider: string
+    model: string
+    messages: Array<{ role: string; content: string }>
+  }
+}
+
 export interface CallSyncPayload {
   event: 'call.started' | 'call.updated' | 'call.ended'
   call: {
@@ -47,6 +56,12 @@ export const api = {
     fetchJson<{ call: Transcript; result: EvalResult | null }>(`/calls/${id}`),
   getCallRecordingUrl: (id: string) => fetchJson<{ url: string }>(`/calls/${id}/recording`),
   getVapiConfig: () => fetchJson<VapiConfig>('/vapi/config'),
+  getVapiCallOverrides: (acceptanceProfile: CallAcceptanceProfile) =>
+    fetchJson<VapiCallOverrides>('/vapi/call-overrides', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acceptanceProfile }),
+    }),
   syncCall: (body: CallSyncPayload) =>
     fetchJson<{ call: Transcript; result: EvalResult | null }>('/calls/sync', {
       method: 'POST',

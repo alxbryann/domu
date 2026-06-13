@@ -108,6 +108,30 @@ body {
   transition: background-color 0.2s, color 0.2s;
 }
 
+/* Voice pulse animations */
+@keyframes voice-bar-agent {
+  0%, 100% { transform: scaleY(0.12); opacity: 0.3; }
+  50% { transform: scaleY(1); opacity: 0.9; }
+}
+
+@keyframes voice-bar-user {
+  0%, 100% { transform: scaleY(0.1); opacity: 0.25; }
+  15% { transform: scaleY(0.82); opacity: 0.85; }
+  40% { transform: scaleY(0.22); opacity: 0.45; }
+  65% { transform: scaleY(0.96); opacity: 0.95; }
+  85% { transform: scaleY(0.38); opacity: 0.6; }
+}
+
+@keyframes voice-bar-idle {
+  0%, 100% { transform: scaleY(0.06); opacity: 0.15; }
+  50% { transform: scaleY(0.16); opacity: 0.28; }
+}
+
+@keyframes voice-ring-pulse {
+  0% { transform: scale(1); opacity: 0.45; }
+  100% { transform: scale(1.75); opacity: 0; }
+}
+
 .domu-hero-grid {
   background-color: var(--color-domu-navy);
   background-image:

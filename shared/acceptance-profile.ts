@@ -397,6 +397,83 @@ export function checkGroundTruthFacts(
     })
 }
 
+function formatAmountForAgent(value: string): string {
+  const num = normalizeAmount(value)
+  if (num === null) return value.trim()
+  const hasCents = !Number.isInteger(num) && (num * 100) % 100 !== 0
+  return `$${num.toLocaleString('en-US', {
+    minimumFractionDigits: hasCents ? 2 : 0,
+    maximumFractionDigits: 2,
+  })}`
+}
+
+function formatDateForAgent(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return trimmed
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? `${trimmed}T12:00:00` : trimmed
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return trimmed
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+function formatFactValueForAgent(fact: GroundTruthFact): string {
+  switch (fact.kind) {
+    case 'amount':
+      return formatAmountForAgent(fact.value)
+    case 'date':
+      return formatDateForAgent(fact.value)
+    default:
+      return fact.value.trim()
+  }
+}
+
+function camelToSnake(value: string): string {
+  return value.replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`)
+}
+
+/** Ground-truth block injected into the Vapi assistant at call start. */
+export function formatGroundTruthForAgent(profile: CallAcceptanceProfile): string {
+  const facts = profile.facts
+    .filter((f) => f.enabled && f.value.trim())
+    .map((f) => `- ${f.label}: ${formatFactValueForAgent(f)}`)
+    .join('\n')
+
+  const rules = profile.rules
+    .filter((r) => r.enabled)
+    .map((r) => `- ${r.label}: ${r.description}`)
+    .join('\n')
+
+  let text = `ACCOUNT DATA FOR THIS CALL (verified — use exactly, do not invent or contradict):
+${facts || '(none configured)'}`
+
+  if (rules) {
+    text += `\n\nBEHAVIORAL REQUIREMENTS:\n${rules}`
+  }
+
+  if (profile.notes?.trim()) {
+    text += `\n\nADDITIONAL CONTEXT: ${profile.notes.trim()}`
+  }
+
+  return text
+}
+
+/** Variable overrides for Vapi Liquid templates ({{customerName}}, {{groundTruth}}, etc.). */
+export function buildVapiVariableValues(profile: CallAcceptanceProfile): Record<string, string> {
+  const values: Record<string, string> = {}
+  const groundTruth = formatGroundTruthForAgent(profile)
+  values.groundTruth = groundTruth
+  values.accountContext = groundTruth
+
+  for (const fact of profile.facts) {
+    if (!fact.enabled || !fact.value.trim()) continue
+    const formatted = formatFactValueForAgent(fact)
+    values[fact.id] = formatted
+    values[camelToSnake(fact.id)] = formatted
+  }
+
+  return values
+}
+
 export function formatGroundTruthForJudge(profile: CallAcceptanceProfile | undefined): string {
   if (!profile) return 'No ground-truth account data provided.'
 

@@ -60,7 +60,7 @@ export function LiveCallPage() {
 
   if (waitingForSession) {
     return (
-      <div className="min-h-full bg-app-bg flex items-center justify-center p-8">
+      <div className="h-full bg-app-bg flex items-center justify-center p-8">
         <div className="text-center space-y-3">
           <p className="text-app-text font-medium">Connecting call…</p>
           <p className="text-sm text-app-muted">Setting up live monitor</p>
@@ -70,8 +70,8 @@ export function LiveCallPage() {
   }
 
   return (
-    <div className="min-h-full bg-app-bg">
-      <div className="border-b border-app-border px-6 py-4 flex items-center justify-between gap-4">
+    <div className="h-full flex flex-col bg-app-bg">
+      <div className="shrink-0 border-b border-app-border px-6 py-4 flex items-center justify-between gap-4">
         <div>
           <Link to="/calls" className="text-xs text-domu-blue hover:underline">
             ← Calls
@@ -91,23 +91,23 @@ export function LiveCallPage() {
       </div>
 
       {error && (
-        <div className="px-6 pt-4">
+        <div className="px-6 pt-4 shrink-0">
           <ComplianceAlert variant="danger" title="Call error" message={error} />
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-0 xl:gap-0 min-h-[calc(100vh-5rem)]">
-        <section className="flex flex-col border-r border-app-border xl:min-h-[calc(100vh-5rem)]">
-          <div className="flex-1 flex flex-col items-center justify-center px-6 py-10 bg-gradient-to-b from-domu-blue/5 to-transparent">
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] min-h-0">
+        <section className="flex flex-col border-r border-app-border min-h-0">
+          <div className="flex-1 flex flex-col items-center justify-center px-6 py-6 bg-gradient-to-b from-domu-blue/5 to-transparent min-h-0">
             <SectionLabel variant="outline">Voice stream</SectionLabel>
             <VoicePulse
               isSpeaking={isSpeaking}
               speakingRole={speakingRole}
               volumeLevel={volumeLevel}
-              className="mt-8"
+              className="mt-6"
             />
             {state === 'live' && (
-              <div className="mt-8 text-center space-y-2 w-full px-4">
+              <div className="mt-6 text-center space-y-2 w-full px-4">
                 {isChatMode ? (
                   <CallChatInput
                     onSend={sendTextMessage}
@@ -154,7 +154,7 @@ export function LiveCallPage() {
             )}
           </div>
 
-          <div className="border-t border-app-border p-6 max-h-[40vh] overflow-y-auto">
+          <div className="shrink-0 border-t border-app-border p-6 max-h-[38%] overflow-y-auto">
             <h2 className="text-sm font-semibold text-app-text mb-4">Live transcript</h2>
             {turns.length === 0 ? (
               <p className="text-sm text-app-muted">Waiting for speech…</p>
@@ -181,23 +181,46 @@ export function LiveCallPage() {
           </div>
         </section>
 
-        <aside className="p-6 bg-app-card/50 xl:min-h-[calc(100vh-5rem)] space-y-5">
-          <div className="rounded-domu-lg bg-app-card border border-app-border p-4">
-            <AcceptanceProfileEditor
-              profile={acceptanceProfile}
-              onChange={setAcceptanceProfile}
-              onSave={() => saveAcceptanceProfile()}
-              saving={profileSaving}
-              compact
-              lockInputs={state === 'live'}
-              disabled={state === 'ending'}
-            />
-          </div>
-          <LiveMonitorPanel
-            monitor={liveMonitor}
-            elapsedSec={elapsedSec}
-            lastLatencyMs={liveMonitor.lastLatencyMs}
-          />
+        <aside className="overflow-y-auto p-6 bg-app-card/50 space-y-5">
+          {state === 'live' ? (
+            <>
+              <LiveMonitorPanel
+                monitor={liveMonitor}
+                elapsedSec={elapsedSec}
+                lastLatencyMs={liveMonitor.lastLatencyMs}
+              />
+              <div className="rounded-domu-lg bg-app-card border border-app-border p-4">
+                <AcceptanceProfileEditor
+                  profile={acceptanceProfile}
+                  onChange={setAcceptanceProfile}
+                  onSave={() => saveAcceptanceProfile()}
+                  saving={profileSaving}
+                  compact
+                  lockInputs
+                  disabled={false}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="rounded-domu-lg bg-app-card border border-app-border p-4">
+                <AcceptanceProfileEditor
+                  profile={acceptanceProfile}
+                  onChange={setAcceptanceProfile}
+                  onSave={() => saveAcceptanceProfile()}
+                  saving={profileSaving}
+                  compact
+                  lockInputs={false}
+                  disabled={state === 'ending'}
+                />
+              </div>
+              <LiveMonitorPanel
+                monitor={liveMonitor}
+                elapsedSec={elapsedSec}
+                lastLatencyMs={liveMonitor.lastLatencyMs}
+              />
+            </>
+          )}
         </aside>
       </div>
     </div>
