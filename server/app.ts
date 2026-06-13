@@ -1,18 +1,27 @@
 import express from 'express'
 import cors from 'cors'
 import { config } from 'dotenv'
-import { CallAcceptanceProfileSchema } from '../shared/acceptance-profile.js'
+import {
+  CallAcceptanceProfileSchema,
+  DEFAULT_ACCEPTANCE_PROFILE,
+} from '../shared/acceptance-profile.js'
 import { CallWebhookSchema } from '../eval/call-ingest.js'
+import { generateTranscriptTurns } from '../eval/generate-transcript.js'
+import { evaluateTranscript } from '../eval/judge.js'
+import { TranscriptSchema } from '../eval/types.js'
 import {
   ingestCallEvent,
   importCallsExport,
+  deleteTranscript,
   listResults,
   listTranscripts,
   loadResult,
   loadTranscript,
+  saveResult,
   saveTranscript,
 } from './call-store.js'
 import { getRecordingSignedUrl } from './call-recording.js'
+import { buildOverviewTrends } from './overview.js'
 import { buildVapiCallOverrides } from './vapi.js'
 
 config()
@@ -139,6 +148,17 @@ app.post('/api/calls/sync', async (req, res) => {
   }
 })
 
+app.delete('/api/calls/:id', async (req, res) => {
+  try {
+    await deleteTranscript(req.params.id)
+    res.json({ ok: true })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to delete call'
+    const status = message === 'Call not found' ? 404 : message === 'Cannot delete a live call' ? 409 : 500
+    res.status(status).json({ error: message })
+  }
+})
+
 app.patch('/api/calls/:id/profile', async (req, res) => {
   try {
     const acceptanceProfile = CallAcceptanceProfileSchema.parse(req.body.acceptanceProfile)
@@ -179,6 +199,7 @@ app.get('/api/overview', async (_req, res) => {
       passRate: Math.round(passRate),
       judgeDisagreements: disagreements,
       recent,
+      trends: buildOverviewTrends(calls, results),
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to load overview'
@@ -195,6 +216,54 @@ app.post('/api/calls/import', async (req, res) => {
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Import failed'
+    res.status(400).json({ error: message })
+  }
+})
+
+app.post('/api/calls/generate', async (req, res) => {
+  try {
+    const scenario = typeof req.body?.scenario === 'string' ? req.body.scenario : ''
+    if (!scenario.trim()) {
+      return res.status(400).json({ error: 'A scenario description is required' })
+    }
+
+    const rawLabel = req.body?.expectedLabel
+    const expectedLabel =
+      rawLabel === 'good' || rawLabel === 'bad' || rawLabel === 'edge' ? rawLabel : undefined
+
+    const profile = req.body?.acceptanceProfile
+      ? CallAcceptanceProfileSchema.parse(req.body.acceptanceProfile)
+      : DEFAULT_ACCEPTANCE_PROFILE
+
+    const turns = await generateTranscriptTurns(scenario, profile, expectedLabel)
+
+    const now = new Date().toISOString()
+    const accountLast4 = profile.facts.find((f) => f.id === 'accountLast4')?.value
+    const transcript = TranscriptSchema.parse({
+      id: `gen-${Date.now().toString(36)}`,
+      source: 'domu',
+      status: 'completed',
+      metadata: {
+        companyId: 'default',
+        agentVersion: 'generated',
+        accountId: accountLast4 ? `ACC-${accountLast4}` : 'ACC-GEN',
+        callDate: now,
+        endedAt: now,
+        description: scenario.trim(),
+        callType: 'synthetic',
+        expectedLabel,
+        acceptanceProfile: profile,
+      },
+      turns,
+    })
+
+    await saveTranscript(transcript)
+    const result = await evaluateTranscript(transcript)
+    await saveResult(result)
+
+    res.json({ call: transcript, result })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Transcript generation failed'
     res.status(400).json({ error: message })
   }
 })

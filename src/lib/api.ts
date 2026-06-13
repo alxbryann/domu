@@ -24,11 +24,8 @@ export interface VapiConfig {
 
 export interface VapiCallOverrides {
   variableValues: Record<string, string>
-  model?: {
-    provider: string
-    model: string
-    messages: Array<{ role: string; content: string }>
-  }
+  firstMessage?: string
+  firstMessageMode?: 'assistant-speaks-first'
 }
 
 export interface CallSyncPayload {
@@ -74,6 +71,8 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ acceptanceProfile }),
     }),
+  deleteCall: (id: string) =>
+    fetchJson<{ ok: true }>(`/calls/${id}`, { method: 'DELETE' }),
   importCalls: (body: unknown) =>
     fetchJson<{ imported: number; calls: Array<{ call: Transcript; result: EvalResult | null }> }>(
       '/calls/import',
@@ -83,4 +82,14 @@ export const api = {
         body: JSON.stringify(body),
       },
     ),
+  generateCall: (body: {
+    scenario: string
+    expectedLabel?: 'good' | 'bad' | 'edge'
+    acceptanceProfile?: CallAcceptanceProfile
+  }) =>
+    fetchJson<{ call: Transcript; result: EvalResult | null }>('/calls/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
 }

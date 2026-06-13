@@ -2,7 +2,7 @@ import { evaluateTranscript } from '../eval/judge.js'
 import { buildTranscript, type CallWebhookPayload } from '../eval/call-ingest.js'
 import { parseCallsExport } from '../eval/call-export-parse.js'
 import { TranscriptSchema, type Transcript, type EvalResult } from '../eval/types.js'
-import { persistCallRecording } from './call-recording.js'
+import { deleteCallRecording, persistCallRecording } from './call-recording.js'
 import { getSupabase } from './supabase.js'
 import { applyEscalationAlerts } from './escalation-alerts.js'
 
@@ -130,6 +130,30 @@ export async function listTranscripts(): Promise<Transcript[]> {
     .order('updated_at', { ascending: false })
   if (error) throw new Error(`Failed to list calls: ${error.message}`)
   return (data as CallRow[]).map(rowToTranscript)
+}
+
+export async function deleteTranscript(id: string): Promise<void> {
+  const transcript = await loadTranscript(id)
+  if (!transcript) throw new Error('Call not found')
+  if (transcript.status === 'live') {
+    throw new Error('Cannot delete a live call')
+  }
+
+  const storagePath = transcript.metadata.recordingStoragePath
+  if (storagePath) {
+    try {
+      await deleteCallRecording(storagePath)
+    } catch (err) {
+      console.error(
+        `Recording delete failed for ${id}:`,
+        err instanceof Error ? err.message : err,
+      )
+    }
+  }
+
+  const supabase = getSupabase()
+  const { error } = await supabase.from('calls').delete().eq('id', id)
+  if (error) throw new Error(`Failed to delete call ${id}: ${error.message}`)
 }
 
 export async function listResults(): Promise<EvalResult[]> {

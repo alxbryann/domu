@@ -67,6 +67,13 @@ export interface CallWithResult extends Transcript {
   result: EvalResult | null
 }
 
+export interface OverviewTrends {
+  callVolume: number[]
+  qualityScores: number[]
+  complianceFailures: number[]
+  passRates: number[]
+}
+
 export interface OverviewData {
   liveCalls: number
   evaluatingCalls: number
@@ -76,4 +83,5 @@ export interface OverviewData {
   passRate: number
   judgeDisagreements: number
   recent: EvalResult[]
+  trends: OverviewTrends
 }

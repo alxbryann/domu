@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CallChatInput } from '../components/CallChatInput'
+import { LiveAlertToasts } from '../components/LiveAlertToasts'
 import { LiveMonitorPanel } from '../components/LiveMonitorPanel'
 import { AcceptanceProfileEditor } from '../components/AcceptanceProfileEditor'
 import { VoicePulse } from '../components/VoicePulse'
@@ -19,6 +20,7 @@ export function LiveCallPage() {
     state,
     error,
     turns,
+    interimTurn,
     isSpeaking,
     speakingRole,
     volumeLevel,
@@ -71,6 +73,7 @@ export function LiveCallPage() {
 
   return (
     <div className="h-full flex flex-col bg-app-bg">
+      {isLive && <LiveAlertToasts alerts={liveMonitor.alerts} />}
       <div className="shrink-0 border-b border-app-border px-6 py-4 flex items-center justify-between gap-4">
         <div>
           <Link to="/calls" className="text-xs text-domu-blue hover:underline">
@@ -156,7 +159,7 @@ export function LiveCallPage() {
 
           <div className="shrink-0 border-t border-app-border p-6 max-h-[38%] overflow-y-auto">
             <h2 className="text-sm font-semibold text-app-text mb-4">Live transcript</h2>
-            {turns.length === 0 ? (
+            {turns.length === 0 && !interimTurn ? (
               <p className="text-sm text-app-muted">Waiting for speech…</p>
             ) : (
               <div className="space-y-3">
@@ -176,6 +179,26 @@ export function LiveCallPage() {
                     <p className="text-app-text leading-relaxed">{turn.text}</p>
                   </div>
                 ))}
+                {interimTurn && (
+                  <div
+                    className={[
+                      'rounded-domu-md px-4 py-3 text-sm opacity-70',
+                      interimTurn.speaker === 'agent'
+                        ? 'bg-app-transcript-agent border-l-2 border-domu-blue/50'
+                        : 'bg-app-transcript-customer border-l-2 border-domu-success/50',
+                    ].join(' ')}
+                  >
+                    <span className="text-xs font-mono uppercase tracking-wider text-app-muted flex items-center gap-2 mb-1">
+                      {interimTurn.speaker}
+                      <span className="inline-flex gap-0.5">
+                        <span className="h-1 w-1 rounded-full bg-app-muted animate-pulse" />
+                        <span className="h-1 w-1 rounded-full bg-app-muted animate-pulse [animation-delay:150ms]" />
+                        <span className="h-1 w-1 rounded-full bg-app-muted animate-pulse [animation-delay:300ms]" />
+                      </span>
+                    </span>
+                    <p className="text-app-text leading-relaxed italic">{interimTurn.text}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

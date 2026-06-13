@@ -132,6 +132,11 @@ body {
   100% { transform: scale(1.75); opacity: 0; }
 }
 
+@keyframes domu-toast-in {
+  0% { transform: translateX(16px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
 .domu-hero-grid {
   background-color: var(--color-domu-navy);
   background-image:

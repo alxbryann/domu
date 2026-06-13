@@ -42,7 +42,14 @@ interface VapiTranscriptMessage {
 interface VapiConversationMessage {
   role?: string
   message?: string
+  content?: string
   time?: number
+}
+
+/** Vapi's transcript `role` can be user/customer/bot/assistant; normalize it. */
+function roleToSpeaker(role?: string): 'agent' | 'customer' {
+  const r = (role ?? '').toLowerCase()
+  return r === 'user' || r === 'customer' ? 'customer' : 'agent'
 }
 
 function conversationMessagesToEntries(
@@ -51,16 +58,19 @@ function conversationMessagesToEntries(
   return messages
     .filter((message) => {
       const role = (message.role ?? '').toLowerCase()
+      // Vapi sends the text under `message`, but some payloads use `content`.
+      const text = message.message ?? message.content
       return (
         (role === 'user' || role === 'bot' || role === 'assistant') &&
-        Boolean(message.message?.trim())
+        Boolean(text?.trim())
       )
     })
     .map((message) => {
       const role = (message.role ?? '').toLowerCase()
+      const text = (message.message ?? message.content ?? '').trim()
       return {
         role: role === 'user' ? 'user' : 'assistant',
-        message: message.message!.trim(),
+        message: text,
         time: message.time ?? Date.now(),
       }
     })
@@ -93,6 +103,7 @@ interface VapiCallContextValue {
   callId: string | null
   error: string
   turns: TranscriptTurn[]
+  interimTurn: TranscriptTurn | null
   isSpeaking: boolean
   speakingRole: 'agent' | 'customer' | null
   volumeLevel: number
@@ -126,6 +137,7 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
   const [callId, setCallId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [turns, setTurns] = useState<TranscriptTurn[]>([])
+  const [interimTurn, setInterimTurn] = useState<TranscriptTurn | null>(null)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [speakingRole, setSpeakingRole] = useState<'agent' | 'customer' | null>(null)
   const [volumeLevel, setVolumeLevel] = useState(0)
@@ -199,6 +211,7 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
       setState('idle')
       setCallId(null)
       setTurns([])
+      setInterimTurn(null)
       setIsSpeaking(false)
       setSpeakingRole(null)
       setVolumeLevel(0)
@@ -293,6 +306,7 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
       messagesRef.current = []
       setCallId(id)
       setTurns([])
+      setInterimTurn(null)
       setState('live')
       setElapsedSec(0)
       setMicMuted(true)
@@ -333,15 +347,20 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
       })
 
       vapi.on('message', (message) => {
+        // Live (interim) transcript — show what's being said in real time for
+        // BOTH the agent and the customer, before the utterance is finalized.
         if (message.type === 'transcript' && message.transcriptType === 'partial') {
-          const role = (message.role ?? '').toLowerCase()
-          if (role === 'user') {
-            setIsSpeaking(true)
-            setSpeakingRole('customer')
-          }
+          const text = message.transcript?.trim()
+          if (!text) return
+          const speaker = roleToSpeaker(message.role)
+          setInterimTurn({ speaker, text, timestamp: new Date().toISOString() })
+          setIsSpeaking(true)
+          setSpeakingRole(speaker)
           return
         }
 
+        // Authoritative conversation snapshot — the de-duplicated source of
+        // truth for committed turns.
         if (message.type === 'conversation-update' && Array.isArray(message.messages)) {
           const entries = conversationMessagesToEntries(message.messages)
           if (entries.length === 0) return
@@ -349,6 +368,7 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
           messagesRef.current = entries
           const nextTurns = messagesToTurns(entries)
           setTurns(nextTurns)
+          setInterimTurn(null)
 
           const lastEntry = entries[entries.length - 1]
           const lastTurn = messageToTurn(lastEntry)
@@ -368,22 +388,33 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
 
         if (message.type !== 'transcript') return
         if (message.transcriptType && message.transcriptType !== 'final') return
-        if (!message.transcript?.trim()) return
+        const finalText = message.transcript?.trim()
+        if (!finalText) return
 
+        // Final transcript — append unless conversation-update already captured
+        // this exact line (avoid duplicate turns from the two event streams).
         const entry: VapiTranscriptMessage = {
           role: message.role,
-          message: message.transcript.trim(),
+          message: finalText,
           time: Date.now(),
         }
-        messagesRef.current = [...messagesRef.current, entry]
-        const nextTurns = messagesToTurns(messagesRef.current)
-        setTurns(nextTurns)
+        const last = messagesRef.current.at(-1)
+        const isDuplicate =
+          last != null &&
+          last.message === entry.message &&
+          (last.role ?? '').toLowerCase() === (entry.role ?? '').toLowerCase()
 
-        const turn = messageToTurn(entry)
-        if (turn && (turn.speaker === 'agent' || turn.speaker === 'customer')) {
-          metricsRef.current = recordTurnLatency(metricsRef.current, turn.speaker, entry.time)
+        if (!isDuplicate) {
+          messagesRef.current = [...messagesRef.current, entry]
+          setTurns(messagesToTurns(messagesRef.current))
+
+          const turn = messageToTurn(entry)
+          if (turn && (turn.speaker === 'agent' || turn.speaker === 'customer')) {
+            metricsRef.current = recordTurnLatency(metricsRef.current, turn.speaker, entry.time)
+          }
         }
 
+        setInterimTurn(null)
         setIsSpeaking(false)
         setSpeakingRole(null)
         void syncCall('call.updated')
@@ -437,9 +468,17 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval)
   }, [state])
 
+  // Include the live (interim) turn so urgent triggers — e.g. a lawsuit threat
+  // like "quiero demandar" — fire the moment they're spoken, even if the final
+  // transcript is delayed or cut off by push-to-talk muting.
+  const monitorTurns = useMemo(
+    () => (interimTurn ? [...turns, interimTurn] : turns),
+    [turns, interimTurn],
+  )
+
   const liveMonitor = useMemo(
-    () => computeLiveMonitor(turns, metricsRef.current, acceptanceProfile),
-    [turns, elapsedSec, acceptanceProfile],
+    () => computeLiveMonitor(monitorTurns, metricsRef.current, acceptanceProfile),
+    [monitorTurns, elapsedSec, acceptanceProfile],
   )
 
   const startCall = useCallback(async () => {
@@ -459,17 +498,20 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
       const assistantOverrides = (await api.getVapiCallOverrides(
         acceptanceProfileRef.current,
       )) as AssistantOverrides
+      // Diagnostic: confirm the personalized greeting is being sent. If
+      // `firstMessage` is undefined here, the profile has no customer name, so
+      // the agent falls back to the assistant's static dashboard greeting.
+      console.info('[vapi] starting call with overrides', {
+        firstMessage: (assistantOverrides as { firstMessage?: string }).firstMessage,
+        firstMessageMode: (assistantOverrides as { firstMessageMode?: string }).firstMessageMode,
+        hasModelOverride: Boolean((assistantOverrides as { model?: unknown }).model),
+      })
       const webCall = await vapi.start(config.assistantId, assistantOverrides)
       const id = webCall?.id
       if (isValidCallId(id)) {
         beginLiveCall(id)
-        return
       }
-
-      if (!callIdRef.current) {
-        setState('error')
-        setError('Call connected but no call ID was returned from Vapi')
-      }
+      // Otherwise wait for the call-start-success event (already bound above)
     } catch (e) {
       setState('error')
       setError(e instanceof Error ? e.message : 'Failed to start call')
@@ -504,6 +546,7 @@ export function VapiCallProvider({ children }: { children: ReactNode }) {
         callId,
         error,
         turns,
+        interimTurn,
         isSpeaking,
         speakingRole,
         volumeLevel,

@@ -49,19 +49,30 @@ export function OverviewPage() {
           value={String(data.liveCalls)}
           change={data.evaluatingCalls > 0 ? `${data.evaluatingCalls} scoring` : 'Active now'}
           changeType={data.liveCalls > 0 ? 'positive' : 'neutral'}
+          sparklineData={data.trends.callVolume}
         />
-        <MetricCard label="Avg Quality Score" value={`${data.avgScore}/5`} change="Completed calls" changeType="neutral" />
+        <MetricCard
+          label="Avg Quality Score"
+          value={`${data.avgScore}/5`}
+          change="Completed calls"
+          changeType="neutral"
+          sparklineData={data.trends.qualityScores}
+        />
         <MetricCard
           label="Compliance Failures"
           value={String(data.complianceFailures)}
           change={data.complianceFailures > 0 ? 'Needs review' : 'All clear'}
           changeType={data.complianceFailures > 0 ? 'negative' : 'positive'}
+          sparklineData={data.trends.complianceFailures}
+          sparklineColor={data.complianceFailures > 0 ? '#E5484D' : '#0145F2'}
         />
         <MetricCard
           label="Pass Rate"
           value={`${data.passRate}%`}
           change={`${data.totalEvals} evals · ${data.judgeDisagreements} disagreements`}
           changeType={data.passRate >= 80 ? 'positive' : 'negative'}
+          sparklineData={data.trends.passRates}
+          sparklineColor={data.passRate >= 80 ? '#30A46C' : '#E5484D'}
         />
       </div>
 

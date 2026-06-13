@@ -13,6 +13,7 @@
     "eval": "tsx eval/run.ts",
     "eval:all": "tsx eval/run.ts --all",
     "eval:validate": "tsx eval/run.ts --validate",
+    "seed:synthetic": "tsx scripts/generate-synthetic.ts",
     "import:vapi": "tsx scripts/import-vapi.ts",
     "migrate:json-to-supabase": "tsx scripts/migrate-json-to-supabase.ts",
     "db:push": "supabase db push",

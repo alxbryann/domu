@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domu QA — Escalation Alert</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:#F7FAFF;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#F7FAFF;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background:#FFFFFF;border:1px solid #E1EAFD;border-radius:12px;overflow:hidden;">
+
+          <!-- Sidebar-style header (Logo + Agent QA) -->
+          <tr>
+            <td style="padding:20px 28px;border-bottom:1px solid rgba(8,20,79,0.1);background:#FFFFFF;">
+              <img src="data:image/webp;base64,UklGRs4FAABXRUJQVlA4IMIFAABQJACdASrIAMgAPp1OoUslpKOhqVU4MLATiU3bq9eUV+59w523vf5kf1DjcJZr0TmH/keuL0TeLF5xXrh/aD1d+bx5y/ou9VV6Lvlu9MBqoTMKIz2GynYh7I7Vcjyn+V5Y6KQYh0L6cfAuK4gparm6EYkrgYVCbz7KlnkkFH0P4E9VZfrNwfd6xeg6nShV1uc0ISNk4W16HulLcQRe0i85Szkckx3ojUgXOE/axniYhW5crz7OUy6qds4P0Dq1JbX49MZV+GR03hahavdvrNSkT7XYZo4Y+vTXq4Z1oN04sVZKVG03LsG6JVzzlTxDrVlP/G0/USiAvr0NNUoI7Wm0qLhO43/R/UOKNDqDnF0UabWumPxbmxIthB9c+Xsy2ECtCjRXBnDonoUY4AD+7wCf6Q9+Ie/EPeZb6op7YlkFxTIZ6uVfgEWQJjXHMWBJJ+VK48uPnpB0yl6Jm02sMcjdDGPfU+SCtddwB1J6gP1o5qmnrfQhCZRvhiK8c7RrEfqY9UInxkbJ4vi85tj3fMtmqwxV/+y8JHmAuKXL/zs1BuEnPRqIaZUyFY7559ONNDThhW1bCWZjCgNxLLlbzshUr5e6cZMhlmQLzX17ARwcKQVpn/1Swn5t4tIkxfFNLW4mjHyOAa6ZHmNDe2c3cTQA5tLJAHvTZZo8UV0AI1ABhShsbFEQbfTrN4xAg67gb3bazFV3rVu8PqXlGpc+GoKeY4pYgZp0gB3JSyJ+rPIP95taRqcmSXumlyyBPmCJ+0KZeSOX7ZGeZy/zt2zYWgNHFdfYXLUJx44kLD7aFvMKdaRVIz1BfDasxwHs8I1WN58Eo190dvzoXTnb6zQO5jxt4rOxZBgU1e5jipsRtvGO/1coxyQGvvpdQag9ya2LyVfJXHntb3hPE9zcDzMqPrUmqbKQ3CR151CyI/Vx1kBGsLnK3W+A+unjvAeAmbvD1Wwb7vFN+6Bq086BdnLoxpC/UxwhOcD9LJ5I41bHsj75X0rGk0cgU2S5NGMq+642GxnrMi5I3VfGZjKq5eiTua3WEydIbXJT32R6YkxOCitLSSp8KP4UfVmoa1a6FpgLkfiZUOO2mKtKbEuRYrhBa3pmJGy+XtEgheZ/KsebgwLBZLt608jNSVljKxIfSmMFsS9Cp83wXlhaPnk/MFDm8enj4TLAfG+YO/SrcJcDUAui/11NAodbNPIoEPdZpRfJvg/dknIlRlG3x2q4MSJdadcVLMW7nr/YNuFPWEaCVBsELLs9/+8yvdmvBtxDg5m0FjZDqovS3j4Q3viSyTB+5i0C4KWmaOeNx2GrGtEYo/WdRIs0XXmV2Y/BR4kUl+4FgLPdotmnxILHxyWQEIf5Alwvht00EivVZi58QLlFuAxvQPmc3X2CnF8ATRIeC5DIeKlt+TkQOnAbQeV15fVP4S0rLoQi/TupwQfGG0uRXFcABkKmjM0Y8mU0elNEOujXd8bIu3vB4M2t49w8PzeQuvGOA1OgyEGmgolX+A6jS0yvHdGvXP+9gZKSRkkzbAZr1qyzD6FWqVZgVZctLWuYp5Uyl1D4dYoMt7KMetL7DvKQdE5DCuoM39Ydq1RjOrB8O3ZdF4/adkHT0VkZ8o3ucspY7pm1aGj3ETsRsogzvLIIbspUTnL6SqowMXl93JMrLkdxiLWiCLQlaFJwhc3ZDAKuQ8CG0lCEVw0xfh8LteV0SHk+AjEqDJjY1BI5dVNLtlPM4zuBiFwakdZlsRgAF0wrU/mJDTiO1xa3A0XVoXeRuw/3qpUtayp4FZh9e+0J7MPrn65jqwvieFZs08lcatr1Z5QniIO2bUXBs7DW0vXlOWL4VNDQ3o67uycl25XC7TwOSQlMphEPxc3ozCOsa+cw/C84/UtZCWx6QkPSSX7/FQuR68lRtAcF6vpHb0oFML3uaAgBDGpYzQryRpMn3zM6ZSrgeBFJqvWb1b8A0FYAAAAA" alt="Domu" width="auto" height="32" style="display:block;height:32px;width:auto;border:0;" />
+              <p style="margin:8px 0 0;font-family:"Fragment Mono", ui-monospace, monospace;font-size:12px;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;color:#A2A9C5;">Agent QA</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding:28px 28px 0;background:#F7FAFF;">
+              <span style="display:inline-block;padding:6px 12px;font-family:"Fragment Mono", ui-monospace, monospace;font-size:12px;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;color:#0145F2;background:#EFF4FF;border:1px solid rgba(1,69,242,0.2);border-radius:4px;">Escalation alert</span>
+              <h1 style="margin:16px 0 0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:24px;font-weight:700;color:#08144F;line-height:1.25;letter-spacing:-0.02em;">Review required</h1>
+              <p style="margin:8px 0 0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:14px;color:#646E95;line-height:1.5;">
+                A critical trigger was detected during a call.
+              </p>
+            </td>
+          </tr>
+
+          <!-- ComplianceAlert danger -->
+          <tr>
+            <td style="padding:20px 28px 0;background:#F7FAFF;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:rgba(239, 68, 68, 0.12);border:1px solid rgba(239,68,68,0.3);border-radius:12px;">
+                <tr>
+                  <td style="padding:16px 18px;">
+                    <p style="margin:0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:14px;font-weight:600;color:#EF4444;">Immediate review required</p>
+                    <p style="margin:8px 0 0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:14px;color:#EF4444;opacity:0.85;line-height:1.55;">
+                      Please open the case and review the transcript.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Card: call details -->
+          <tr>
+            <td style="padding:20px 28px 0;background:#F7FAFF;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#FFFFFF;border:1px solid #E1EAFD;border-radius:12px;">
+                <tr>
+                  <td style="padding:16px 20px;border-bottom:1px solid #E1EAFD;">
+                    <span style="display:inline-block;padding:6px 12px;font-family:"Fragment Mono", ui-monospace, monospace;font-size:12px;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;color:#0145F2;background:#EFF4FF;border:1px solid rgba(1,69,242,0.2);border-radius:4px;">Call details</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:4px 20px 16px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding:12px 0;border-bottom:1px solid #EBF0FE;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:13px;color:#646E95;width:110px;vertical-align:top;">Call ID</td>
+                        <td style="padding:12px 0;border-bottom:1px solid #EBF0FE;font-family:"Fragment Mono", ui-monospace, monospace;font-size:12px;color:#08144F;word-break:break-all;">019ebe81-ba91-7003-9708-6cd053a5ff84</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:12px 0;border-bottom:1px solid #EBF0FE;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:13px;color:#646E95;vertical-align:top;">Trigger</td>
+                        <td style="padding:12px 0;border-bottom:1px solid #EBF0FE;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:13px;color:#08144F;font-weight:600;">Legal / lawsuit threat</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:12px 0;border-bottom:1px solid #EBF0FE;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:13px;color:#646E95;vertical-align:top;">Severity</td>
+                        <td style="padding:12px 0;border-bottom:1px solid #EBF0FE;">
+                          <span style="display:inline-block;padding:2px 10px;font-size:12px;font-weight:500;background:rgba(239, 68, 68, 0.12);color:#EF4444;border-radius:9999px;">Critical</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:12px 0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:13px;color:#646E95;vertical-align:top;">Speaker</td>
+                        <td style="padding:12px 0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:13px;color:#08144F;">Customer</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- TranscriptViewer-style quote -->
+          <tr>
+            <td style="padding:20px 28px 0;background:#F7FAFF;">
+              <span style="display:inline-block;padding:6px 12px;font-family:"Fragment Mono", ui-monospace, monospace;font-size:12px;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;color:#0145F2;background:#EFF4FF;border:1px solid rgba(1,69,242,0.2);border-radius:4px;">Detected statement</span>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:12px;border:2px solid rgba(239,68,68,0.5);background:rgba(239,68,68,0.08);border-radius:8px;">
+                <tr>
+                  <td style="padding:14px 16px;">
+                    <p style="margin:0 0 6px;font-family:"Fragment Mono", ui-monospace, monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#A2A9C5;">Customer</p>
+                    <p style="margin:0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:14px;color:#08144F;line-height:1.6;font-weight:500;">&ldquo;i want to sue the company&rdquo;</p>
+                    <p style="margin:10px 0 0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:12px;color:#646E95;">
+                      Matched phrase: <span style="color:#08144F;font-weight:500;">&ldquo;sue&rdquo;</span>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:12px 0 0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:13px;color:#646E95;line-height:1.5;">Customer mentioned lawsuit or legal action</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:4px 28px 28px;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="border-radius:8px;background:#0145F2;">
+                    <a href="http://localhost:5173/calls/019ebe81-ba91-7003-9708-6cd053a5ff84/live" target="_blank" style="display:inline-block;padding:0 20px;height:44px;line-height:44px;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:14px;font-weight:500;color:#FFFFFF;text-decoration:none;">
+                      Review case in dashboard &nbsp;&#8594;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:14px 0 0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:12px;color:#646E95;line-height:1.5;">
+                Open the call record to review the full transcript and take action.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 28px;background:#F7FAFF;border-top:1px solid #E1EAFD;">
+              <p style="margin:0;font-family:"Inter", "Helvetica Neue", system-ui, sans-serif;font-size:12px;color:#A2A9C5;line-height:1.5;">
+                Automated alert from Domu Agent QA. Do not reply to this message.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

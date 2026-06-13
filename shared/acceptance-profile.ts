@@ -433,9 +433,14 @@ function camelToSnake(value: string): string {
 
 /** Ground-truth block injected into the Vapi assistant at call start. */
 export function formatGroundTruthForAgent(profile: CallAcceptanceProfile): string {
+  const customerName = resolveCustomerName(profile)
+
+  // Render as `Label = "value"` and tell the model the label is NOT to be
+  // spoken. Cheaper models (e.g. Haiku) otherwise read the field name aloud —
+  // saying "am I speaking with customer name?" instead of the real name.
   const facts = profile.facts
     .filter((f) => f.enabled && f.value.trim())
-    .map((f) => `- ${f.label}: ${formatFactValueForAgent(f)}`)
+    .map((f) => `- ${f.label} = "${formatFactValueForAgent(f)}"`)
     .join('\n')
 
   const rules = profile.rules
@@ -443,7 +448,11 @@ export function formatGroundTruthForAgent(profile: CallAcceptanceProfile): strin
     .map((r) => `- ${r.label}: ${r.description}`)
     .join('\n')
 
-  let text = `ACCOUNT DATA FOR THIS CALL (verified — use exactly, do not invent or contradict):
+  const opening = customerName
+    ? `You are speaking with ${customerName}. Always address the customer by their real name, "${customerName}". Never say the words "customer name", never read a field label out loud, and never speak placeholders or stage directions.\n\n`
+    : ''
+
+  let text = `${opening}ACCOUNT DATA FOR THIS CALL (verified — use these EXACT values. The text to the LEFT of each "=" is a field label for your reference only; never say a label out loud, always substitute the real value):
 ${facts || '(none configured)'}`
 
   if (rules) {
@@ -455,6 +464,34 @@ ${facts || '(none configured)'}`
   }
 
   return text
+}
+
+function findFact(profile: CallAcceptanceProfile, id: string): GroundTruthFact | undefined {
+  const fact = profile.facts.find((f) => f.id === id)
+  if (fact && fact.enabled && fact.value.trim()) return fact
+  return undefined
+}
+
+/** The configured customer name, falling back to any enabled name-kind fact. */
+function resolveCustomerName(profile: CallAcceptanceProfile): string | null {
+  const name = (
+    findFact(profile, 'customerName') ??
+    profile.facts.find((f) => f.kind === 'name' && f.enabled && f.value.trim())
+  )?.value.trim()
+  return name || null
+}
+
+/**
+ * Opening line the agent speaks at call start, personalized from the profile.
+ * The Vapi assistant's dashboard `firstMessage` is static, so we override it
+ * per call to use the configured customer name. Returns null when there's no
+ * customer name, so the dashboard default is left untouched.
+ */
+export function buildVapiFirstMessage(profile: CallAcceptanceProfile): string | null {
+  const customerName = resolveCustomerName(profile)
+  if (!customerName) return null
+
+  return `Hello, am I speaking with ${customerName}?`
 }
 
 /** Variable overrides for Vapi Liquid templates ({{customerName}}, {{groundTruth}}, etc.). */

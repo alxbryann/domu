@@ -50,6 +50,14 @@ export async function uploadCallRecording(callId: string, recordingUrl: string):
   return path
 }
 
+export async function deleteCallRecording(storagePath: string): Promise<void> {
+  const supabase = getSupabase()
+  const { error } = await supabase.storage.from(RECORDINGS_BUCKET).remove([storagePath])
+  if (error) {
+    throw new Error(`Failed to delete recording: ${error.message}`)
+  }
+}
+
 export async function getRecordingSignedUrl(
   storagePath: string,
   expiresInSeconds = 3600,

@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 interface SparklineProps {
   data?: number[]
   color?: string
@@ -5,20 +7,28 @@ interface SparklineProps {
   className?: string
 }
 
+function normalizeSeries(data: number[]): number[] {
+  if (data.length === 0) return [0, 0]
+  if (data.length === 1) return [data[0], data[0]]
+  return data
+}
+
 export function Sparkline({
-  data = [20, 35, 28, 45, 38, 52, 48, 60, 55, 70, 65, 78],
+  data = [],
   color = '#0145F2',
   height = 40,
   className = '',
 }: SparklineProps) {
+  const gradientId = useId()
+  const series = normalizeSeries(data)
   const width = 120
-  const max = Math.max(...data)
-  const min = Math.min(...data)
+  const max = Math.max(...series)
+  const min = Math.min(...series)
   const range = max - min || 1
 
-  const points = data
+  const points = series
     .map((v, i) => {
-      const x = (i / (data.length - 1)) * width
+      const x = (i / (series.length - 1)) * width
       const y = height - ((v - min) / range) * (height - 4) - 2
       return `${x},${y}`
     })
@@ -31,14 +41,15 @@ export function Sparkline({
       viewBox={`0 0 ${width} ${height}`}
       className={`w-full ${className}`}
       preserveAspectRatio="none"
+      aria-hidden
     >
       <defs>
-        <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polygon points={areaPoints} fill="url(#sparkGrad)" />
+      <polygon points={areaPoints} fill={`url(#${gradientId})`} />
       <polyline
         points={points}
         fill="none"

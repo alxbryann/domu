@@ -28,7 +28,7 @@ export function VapiLiveCallPanel() {
     startCall,
     endCall,
   } = useVapiCall()
-  const [showProfile, setShowProfile] = useState(true)
+  const [showProfile, setShowProfile] = useState(false)
 
   if (configError) {
     return (

@@ -1,7 +1,7 @@
 import type { CallAcceptanceProfile } from '../shared/acceptance-profile.js'
 import {
+  buildVapiFirstMessage,
   buildVapiVariableValues,
-  formatGroundTruthForAgent,
 } from '../shared/acceptance-profile.js'
 
 type VapiCallResponse = {
@@ -14,20 +14,15 @@ type VapiCallResponse = {
 }
 
 type VapiAssistant = {
-  model?: {
-    provider?: string
-    model?: string
+  model?: Record<string, unknown> & {
     messages?: Array<{ role?: string; content?: string }>
   }
 }
 
 export type VapiCallOverrides = {
   variableValues: Record<string, string>
-  model?: {
-    provider: string
-    model: string
-    messages: Array<{ role: string; content: string }>
-  }
+  firstMessage?: string
+  firstMessageMode?: 'assistant-speaks-first'
 }
 
 function extractRecordingUrl(data: VapiCallResponse): string | null {
@@ -65,46 +60,82 @@ export async function fetchVapiRecordingUrl(callId: string): Promise<string | nu
   return null
 }
 
-export async function buildVapiCallOverrides(
-  profile: CallAcceptanceProfile,
-  assistantId: string,
-): Promise<VapiCallOverrides> {
-  const variableValues = buildVapiVariableValues(profile)
-  const groundTruth = formatGroundTruthForAgent(profile)
-  const key = process.env.VAPI_PRIVATE_KEY
+const GROUND_TRUTH_PLACEHOLDER_RE = /\{\{\s*groundTruth\s*\}\}/
+const ensuredAssistants = new Set<string>()
 
-  if (!key) {
-    return { variableValues }
-  }
+/**
+ * Ground-truth account data is injected per call via the `{{groundTruth}}`
+ * Liquid variable (filled from `variableValues`). For substitution to happen,
+ * the assistant's system prompt must contain that placeholder.
+ *
+ * We intentionally do NOT inject ground truth through a `model` override:
+ * sending `model.messages` in assistantOverrides makes Vapi generate the first
+ * message from the model and ignore our personalized `firstMessage` greeting
+ * (the model ends up reading field labels aloud — "am I speaking with customer
+ * name?"). Instead we make sure the placeholder exists, patching the assistant
+ * once per process if it's missing.
+ */
+async function ensureGroundTruthPlaceholder(assistantId: string, key: string): Promise<void> {
+  if (ensuredAssistants.has(assistantId)) return
 
   try {
     const res = await fetch(`https://api.vapi.ai/assistant/${assistantId}`, {
       headers: { Authorization: `Bearer ${key}` },
     })
-    if (!res.ok) {
-      return { variableValues }
-    }
+    if (!res.ok) return
 
     const assistant = (await res.json()) as VapiAssistant
-    const provider = assistant.model?.provider
-    const modelName = assistant.model?.model
-    if (!provider || !modelName) {
-      return { variableValues }
+    const messages = assistant.model?.messages ?? []
+    const sysIndex = messages.findIndex((m) => (m.role ?? '') === 'system')
+    const sysContent = sysIndex >= 0 ? (messages[sysIndex].content ?? '') : ''
+
+    if (GROUND_TRUTH_PLACEHOLDER_RE.test(sysContent)) {
+      ensuredAssistants.add(assistantId)
+      return
     }
 
-    const existingMessages = (assistant.model?.messages ?? [])
-      .filter((message) => message.role && message.content)
-      .map((message) => ({ role: message.role!, content: message.content! }))
+    const addition =
+      '\n\n# VERIFIED ACCOUNT DATA FOR THIS CALL\n' +
+      'Use these exact values; never read a field label out loud.\n{{groundTruth}}'
+    const nextMessages =
+      sysIndex >= 0
+        ? messages.map((m, i) =>
+            i === sysIndex ? { ...m, content: (m.content ?? '') + addition } : m,
+          )
+        : [{ role: 'system', content: addition.trimStart() }, ...messages]
 
-    return {
-      variableValues,
-      model: {
-        provider,
-        model: modelName,
-        messages: [...existingMessages, { role: 'system', content: groundTruth }],
-      },
-    }
+    const patch = await fetch(`https://api.vapi.ai/assistant/${assistantId}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: { ...assistant.model, messages: nextMessages } }),
+    })
+    if (patch.ok) ensuredAssistants.add(assistantId)
   } catch {
-    return { variableValues }
+    // Best-effort: if the patch fails, ground truth just isn't injected this
+    // call — the personalized greeting still works.
   }
+}
+
+export async function buildVapiCallOverrides(
+  profile: CallAcceptanceProfile,
+  assistantId: string,
+): Promise<VapiCallOverrides> {
+  const variableValues = buildVapiVariableValues(profile)
+  const firstMessage = buildVapiFirstMessage(profile)
+
+  const overrides: VapiCallOverrides = { variableValues }
+  if (firstMessage) {
+    // Speak our personalized greeting verbatim at call start.
+    overrides.firstMessage = firstMessage
+    overrides.firstMessageMode = 'assistant-speaks-first'
+  }
+
+  const key = process.env.VAPI_PRIVATE_KEY
+  if (key) {
+    // Make sure {{groundTruth}} exists in the prompt so variableValues can fill
+    // it; await it so the placeholder is in place before the call starts.
+    await ensureGroundTruthPlaceholder(assistantId, key)
+  }
+
+  return overrides
 }

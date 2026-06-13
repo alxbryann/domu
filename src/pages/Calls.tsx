@@ -6,6 +6,7 @@ import { ComplianceAlert } from '../design-system/components/ComplianceAlert'
 import { DataTable } from '../design-system/components/DataTable'
 import { SectionLabel } from '../design-system/components/SectionLabel'
 import { VapiLiveCallPanel } from '../components/VapiLiveCallPanel'
+import { GenerateCallPanel } from '../components/GenerateCallPanel'
 import { api } from '../lib/api'
 import type { CallStatus, CallWithResult } from '../types'
 
@@ -29,6 +30,8 @@ export function CallsPage() {
   const [error, setError] = useState('')
   const [importError, setImportError] = useState('')
   const [importing, setImporting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [showGenerate, setShowGenerate] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
 
@@ -43,6 +46,26 @@ export function CallsPage() {
     }, 5000)
     return () => clearInterval(interval)
   }, [])
+
+  async function handleDeleteCall(call: CallWithResult) {
+    if (call.status === 'live') return
+
+    const confirmed = window.confirm(
+      `Delete call ${call.id}? This removes the recording, transcript, and evaluation.`,
+    )
+    if (!confirmed) return
+
+    setDeletingId(call.id)
+    setError('')
+    try {
+      await api.deleteCall(call.id)
+      setCalls((prev) => prev.filter((c) => c.id !== call.id))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to delete call')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   async function handleImportFile(file: File) {
     setImporting(true)
@@ -94,17 +117,37 @@ export function CallsPage() {
             if (file) void handleImportFile(file)
           }}
         />
-        <Button
-          variant="primary"
-          disabled={importing}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {importing ? 'Importing…' : 'Import call'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            disabled={importing}
+            onClick={() => setShowGenerate((v) => !v)}
+          >
+            {showGenerate ? 'Hide generator' : 'Generate test call'}
+          </Button>
+          <Button
+            variant="primary"
+            disabled={importing}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {importing ? 'Importing…' : 'Import call'}
+          </Button>
+        </div>
       </div>
 
       {importError && (
         <ComplianceAlert variant="danger" title="Import Failed" message={importError} />
+      )}
+
+      {showGenerate && (
+        <GenerateCallPanel
+          onClose={() => setShowGenerate(false)}
+          onGenerated={(id) => {
+            setShowGenerate(false)
+            void loadCalls()
+            navigate(`/calls/${id}`)
+          }}
+        />
       )}
 
       <VapiLiveCallPanel />
@@ -196,6 +239,37 @@ export function CallsPage() {
                     : '—'}
                 </span>
               ),
+            },
+            {
+              key: 'actions',
+              header: '',
+              className: 'w-12',
+              render: (c) =>
+                c.status === 'live' ? null : (
+                  <button
+                    type="button"
+                    aria-label={`Delete call ${c.id}`}
+                    disabled={deletingId === c.id}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void handleDeleteCall(c)
+                    }}
+                    className="p-1.5 rounded-domu-md text-app-muted hover:text-domu-danger hover:bg-domu-danger/10 transition-colors disabled:opacity-50"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M2 4h12M5.5 4V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1M6.5 7v5M9.5 7v5M3.5 4l.5 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l.5-9" />
+                    </svg>
+                  </button>
+                ),
             },
           ]}
         />

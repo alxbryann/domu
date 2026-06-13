@@ -26,7 +26,7 @@ export const ESCALATION_TRIGGERS: EscalationTriggerDefinition[] = [
   {
     id: 'lawsuit-threat',
     pattern:
-      /\b(voy a demandar|quiero demandar|los voy a demandar|demandarlos|demandar|lawsuit|sue you|suing|my lawyer|mi abogado|attorney|legal action|acción legal|accion legal)\b/i,
+      /\b(voy a demandar|quiero demandar|los voy a demandar|demandarlos|demandar|lawsuit|sue you|suing|sued|\bsue\b|my lawyer|mi abogado|attorney|legal action|acción legal|accion legal)\b/i,
     label: 'Legal / lawsuit threat',
     severity: 'critical',
     description: 'Customer mentioned lawsuit or legal action',

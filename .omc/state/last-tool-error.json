@@ -1,7 +1,7 @@
 {
-  "tool_name": "mcp__Claude_Preview__preview_start",
-  "tool_input_preview": "{\"name\":\"domu-dev\"}",
-  "error": "Port 5173 is in use by \"node\" (PID 75400) (not a preview server). Ask the user: does this server need port 5173 specifically (e.g. for OAuth callbacks, webhooks, or CORS)? If yes, set \"autoPort\": false in .claude/launch.json and free port 5173. If no, set \"autoPort\": true in .claude/launch.json AND check the start command for hardcoded port flags (e.g. --port, -p) — remove them so the server uses the assigned port via the PORT environment variable. Then retry.",
-  "timestamp": "2026-06-13T00:19:45.054Z",
+  "tool_name": "mcp__Claude_Preview__preview_click",
+  "tool_input_preview": "{\"serverId\":\"71c701fc-fccf-45b4-a5d3-a536eeabef2a\",\"text\":\"Generate test call\"}",
+  "error": "MCP error -32602: Input validation error: Invalid arguments for tool preview_click: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"selector\"\n    ],\n    \"message\": \"Required\"\n  }\n]",
+  "timestamp": "2026-06-13T02:34:00.899Z",
   "retry_count": 1
 }

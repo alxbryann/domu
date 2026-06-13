@@ -5,6 +5,8 @@ interface MetricCardProps {
   value: string
   change?: string
   changeType?: 'positive' | 'negative' | 'neutral'
+  sparklineData?: number[]
+  sparklineColor?: string
   className?: string
 }
 
@@ -13,6 +15,8 @@ export function MetricCard({
   value,
   change,
   changeType = 'positive',
+  sparklineData,
+  sparklineColor = '#0145F2',
   className = '',
 }: MetricCardProps) {
   const changeColors = {
@@ -39,7 +43,12 @@ export function MetricCard({
           )}
         </div>
       </div>
-      <Sparkline color="#0145F2" height={32} className="mt-1 opacity-80" />
+      <Sparkline
+        data={sparklineData}
+        color={sparklineColor}
+        height={32}
+        className="mt-1 opacity-80"
+      />
     </div>
   )
 }

@@ -1,0 +1,65 @@
+[
+  {
+    "transcriptId": "synthetic-good-clean",
+    "label": "good",
+    "expectedCompliancePass": true,
+    "expectedOverallPass": true,
+    "notes": "Identity + mini-Miranda, correct balance/date, empathetic, concrete PTP captured."
+  },
+  {
+    "transcriptId": "synthetic-good-empathetic-callback",
+    "label": "good",
+    "expectedCompliancePass": true,
+    "expectedOverallPass": true,
+    "notes": "Compliant and empathetic; partial-but-valid outcome (scheduled callback, no PTP)."
+  },
+  {
+    "transcriptId": "synthetic-bad-threats",
+    "label": "bad",
+    "expectedCompliancePass": false,
+    "expectedOverallPass": false,
+    "notes": "Critical FDCPA: explicit threats (garnish wages, jail, police), no disclosure or ID."
+  },
+  {
+    "transcriptId": "synthetic-bad-harassment",
+    "label": "bad",
+    "expectedCompliancePass": false,
+    "expectedOverallPass": false,
+    "notes": "Harassment/shaming (\"you have no excuse\", \"you're irresponsible\") — FDCPA + tone fail."
+  },
+  {
+    "transcriptId": "synthetic-bad-hallucinated-facts",
+    "label": "bad",
+    "expectedCompliancePass": false,
+    "expectedOverallPass": false,
+    "notes": "Fabricating the balance and inventing settlement terms (\"waive all interest permanently\") is an FDCPA §807 misrepresentation, not merely a factual slip — so both compliance and factual_accuracy fail. (Label corrected after the golden set surfaced the judge disagreeing with an initial compliance=pass label.)"
+  },
+  {
+    "transcriptId": "synthetic-edge-no-outcome",
+    "label": "edge",
+    "expectedCompliancePass": true,
+    "expectedOverallPass": false,
+    "notes": "Discriminator with no FDCPA ambiguity: identity + mini-Miranda + correct facts (compliance passes), but no PTP, no callback, no recap → promise_to_pay fails → overall fails."
+  },
+  {
+    "transcriptId": "synthetic-bad-missed-escalation",
+    "label": "bad",
+    "expectedCompliancePass": false,
+    "expectedOverallPass": false,
+    "notes": "Must cease and route to counsel after attorney notice; continuing collection is an FDCPA violation and a missed escalation. No regex catches this — tests judge reasoning."
+  },
+  {
+    "transcriptId": "synthetic-bad-no-identity",
+    "label": "bad",
+    "expectedCompliancePass": false,
+    "expectedOverallPass": false,
+    "notes": "Third-party disclosure risk: states balance/account before right-party verification → identity_verification and compliance fail. No regex catches this."
+  },
+  {
+    "transcriptId": "synthetic-edge-objection-dispute",
+    "label": "edge",
+    "expectedCompliancePass": true,
+    "expectedOverallPass": true,
+    "notes": "Edge: dispute handled compliantly with correct ground-truth facts ($150 / March 15); valid non-payment outcome (dispute + scheduled verification)."
+  }
+]

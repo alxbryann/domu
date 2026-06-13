@@ -1,6 +1,6 @@
 import type { CallAcceptanceProfile, FactCheckResult } from '../../shared/acceptance-profile'
 import { checkGroundTruthFacts } from '../../shared/acceptance-profile'
-import { detectEscalationInTurns } from '../../shared/escalation-triggers'
+import { detectEscalationInTurns, type EscalationTriggerMatch } from '../../shared/escalation-triggers'
 import type { RuleViolation, TranscriptTurn } from '../types'
 
 export type LiveAlertType = 'compliance' | 'latency' | 'quality' | 'system' | 'escalation'
@@ -353,9 +353,18 @@ function buildAlerts(
     })
   }
 
+  // Collapse repeated mentions of the same escalation type into a single alert
+  // so the operator sees one toast/entry per trigger (e.g. one "lawsuit threat")
+  // instead of a duplicate for every turn that matched — which happens when the
+  // phrase shows up across several turns or in both the interim and the final
+  // transcript. Keep the most recent match so the quote reflects the latest line.
+  const escalationByTrigger = new Map<string, EscalationTriggerMatch>()
   for (const trigger of detectEscalationInTurns(turns)) {
+    escalationByTrigger.set(trigger.id, trigger)
+  }
+  for (const trigger of escalationByTrigger.values()) {
     alerts.push({
-      id: `escalation-${trigger.id}-${trigger.turnIndex}`,
+      id: `escalation-${trigger.id}`,
       type: 'escalation',
       severity: trigger.severity,
       message: `${trigger.label} — "${trigger.matchedText}" (${trigger.speaker}: ${trigger.quote.slice(0, 120)}${trigger.quote.length > 120 ? '…' : ''})`,
