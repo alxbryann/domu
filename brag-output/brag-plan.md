@@ -1,29 +1,18 @@
-# /brag — GoTom: lo que viene
+# /brag — GoTom v2: sentimientos, no features
 
-**Ángulo:** GoTom deja de ser "una herramienta que te ayuda con el GTM" y pasa a ser *un equipo de agentes que hace tu GTM por ti*: escribe y lee tus emails, mueve a tus clientes por el kanban y te pregunta antes de actuar, por WhatsApp o en la app web.
+**Ángulo:** el founder está construyendo su producto, que es lo que ama hacer. La prospección y los seguimientos se le acumulan encima como culpa. GoTom le quita ese peso de encima: "Tú construyes. Tom vende." Las features (emails, kanban, WhatsApp) aparecen como *alivio*, no como lista.
 
-**Hook:** "Tu GTM ya no lo haces tú. Lo hace Tom." Lo dice en la tipografía y los colores de la landing, sin intro.
+**Arco emocional:** foco → agobio → respiro → tranquilidad → despertar sin pendientes.
 
-**Highlights (todos siguen al mismo prospecto ficticio, Laura de Acme):**
-1. Tom lee la respuesta de Laura, detecta que quiere reunión y redacta el email de vuelta.
-2. Tom mueve a Acme de "Respondió" a "Reunión" en el kanban.
-3. Tom pregunta por WhatsApp qué horario proponer, tú respondes "Jueves 10:00" y queda agendado. Lo mismo se ve en la app web.
-
-**Punchline:** "Tú cierras. Tom hace el resto." + Probar gratis → gotom.app
-
-**Tono:** default (punchy, limpio, cálido). Formato 1920×1080, 30fps, 23s.
-
-**Identidad visual (tomada de gotom.app):** fondo crema `#EFE9D9`, tinta navy `#17223E`, naranja `#E7623D`, superficie `#FCF7EB`, naranja suave `#FCE4DA`, tag amarillo `#F2C94C` con borde navy y JetBrains Mono, DM Sans 800 apretada para titulares, itálica para el énfasis ("por ti"), tarjetas con borde navy de 2px, cuarto de círculo durazno abajo a la derecha. Logo: círculo naranja + línea de tendencia navy, wordmark "Go" navy + "Tom" naranja.
-
-**Datos:** todos los nombres (Laura Méndez, Acme, Nova Labs, Brisa Café, Kuna Pay, Andes Logística, Rumbo) son ficticios. No hay métricas inventadas.
-
-**Música:** "Happy Beats / Business Moves vol. 1" de ende.app (CC BY 4.0, incluida en el repo de /brag), a 120 BPM, arrancando en su primer beat (3.02s) para que el beat caiga cada 0.5s desde el frame 0. Todos los cortes caen en beat.
+**Sonido:** la música arranca filtrada (lowpass, como con audífonos y concentrado) y durante el agobio se suman clicks de notificaciones cada vez más seguidos. En "Respira." (8.0s, sobre el beat) el filtro se abre de golpe y la música suena completa: el alivio se escucha.
 
 | # | Escena | Tiempo | Qué pasa |
 |---|---|---|---|
-| 1 | Hook | 0.0–3.5 | Tag "LO QUE VIENE EN GOTOM"; 3 líneas: "Tu GTM ya no / lo haces tú. / Lo hace *Tom.*" |
-| 2 | Reveal | 3.5–6.5 | Logo: el círculo aparece, la línea se dibuja, entra el wordmark. "Un equipo de agentes que hace tu go-to-market." |
-| 3 | Emails | 6.5–10.5 | App web: llega la respuesta de Laura, Tom la lee (badge "Quiere reunión") y redacta la respuesta tecleando |
-| 4 | Kanban | 10.5–14.5 | Pipeline de 4 columnas; Tom mueve Acme a "Reunión" y Nova Labs a "Respondió"; toast |
-| 5 | WhatsApp + app | 14.5–19.5 | Chat de WhatsApp: Tom pregunta el horario, respondes "Jueves 10:00", Tom confirma. A la vez, la tarjeta en la app web refleja la misma aprobación y aparece "Reunión agendada" |
-| 6 | Outro | 19.5–23.0 | Logo + "Tú cierras. Tom hace el resto." + botón "Probar gratis →" + gotom.app |
+| 1 | Foco | 0.0–4.0 | Tag "Para founders que construyen". "Estás construyendo *tu producto.*" con un editor escribiendo código; al final se cuelan los primeros pendientes |
+| 2 | Agobio | 4.0–8.0 | "Y mientras, se te acumula *todo lo demás.*" 19 notas de "pendiente" (seguimientos, leads, CRM, LinkedIn, WhatsApp) tapan la pantalla, tiemblan y el contador sube a 23. En el beat 7.65–8.0 todo sale volando |
+| 3 | Respiro | 8.0–10.5 | Un círculo durazno respira. "Respira." → logo + "Tom se encarga." |
+| 4 | Tranquilidad | 10.5–15.5 | "Tú sigues construyendo. Tom sigue *vendiendo.*" Al lado, el día de Tom en calma: encontró cuentas, escribió a Acme, hizo el seguimiento, leyó a Laura, movió Acme en el kanban, te preguntó por WhatsApp |
+| 5 | Despertar | 15.5–19.5 | "Despierta con reuniones, *no con pendientes.*" WhatsApp a las 7:02: "Mientras dormías: Laura confirmó el jueves, Nova Labs ya tiene la info, cero seguimientos pendientes." Respuesta: "Eres un crack, Tom" |
+| 6 | Cierre | 19.5–24.0 | Logo + "Tú construyes. *Tom vende.*" + Probar gratis → gotom.app |
+
+Misma identidad visual que la v1 (ver `brag-plan-v1-features.md`). Todos los nombres son ficticios.
