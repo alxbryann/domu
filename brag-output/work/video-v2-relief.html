@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>GoTom brag</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --bg: #EFE9D9; --ink: #17223E; --ink-2: #3A4460; --muted: #6B7086;
+    --orange: #E7623D; --orange-deep: #C04D2B; --orange-soft: #FCE4DA; --peach: #F0DFCC;
+    --card: #FCF7EB; --yellow: #F2C94C; --green: #3D7B5F; --green-soft: #DDEBDF;
+    --wa-bg: #ECE5DD; --wa-out: #D9FDD3; --wa-head: #1F6E5C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+  body { font-family: 'DM Sans', sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: absolute; inset: 0; overflow: hidden; background: var(--bg); }
+  .abs { position: absolute; }
+  .scene { position: absolute; inset: 0; opacity: 0; }
+  .peach { position: absolute; width: 1100px; height: 1100px; border-radius: 50%; background: var(--peach); opacity: .75; }
+  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 26px; letter-spacing: .14em;
+         text-transform: uppercase; background: var(--yellow); border: 3px solid var(--ink); border-radius: 8px; padding: 10px 20px; color: var(--ink); }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 24px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .h { font-weight: 800; letter-spacing: -0.045em; line-height: 1.02; color: var(--ink); white-space: nowrap; }
+  .h em { font-style: italic; font-weight: 500; letter-spacing: -0.03em; }
+  .o { color: var(--orange); }
+  .line { display: block; will-change: transform, opacity; }
+  .card { background: var(--card); border: 3px solid var(--ink); border-radius: 18px; }
+  .btn { display: inline-flex; align-items: center; gap: 14px; background: var(--orange); color: #fff; font-weight: 700; border-radius: 14px; }
+  .chip { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 5px 10px; }
+  .feed { display:flex; align-items:center; gap:14px; padding:20px 24px; font-size:25px; border-radius:14px; margin-bottom:18px; }
+  .caret { display: inline-block; width: 3px; height: 1.05em; background: var(--orange); vertical-align: -0.15em; margin-left: 2px; }
+
+  /* app window */
+  .win { position: absolute; background: var(--card); border: 3px solid var(--ink); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 60px -30px rgba(23,34,62,.35); }
+  .win-bar { height: 64px; border-bottom: 2px solid rgba(23,34,62,.12); display: flex; align-items: center; padding: 0 26px; gap: 16px; background: #F7F1E2; }
+  .dot3 { display: flex; gap: 9px; } .dot3 i { width: 14px; height: 14px; border-radius: 50%; background: rgba(23,34,62,.18); display: block; }
+  .win-title { font-weight: 700; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+  .agent { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--orange-deep); background: var(--orange-soft); border: 2px solid var(--orange); border-radius: 999px; padding: 6px 14px; }
+  .pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); display: block; }
+
+  .mail { position: absolute; left: 0; right: 0; height: 104px; padding: 18px 26px; border-bottom: 2px solid rgba(23,34,62,.08); }
+  .mail b { font-size: 21px; display: block; }
+  .mail span { font-size: 18px; color: var(--muted); display: block; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .col { position: absolute; top: 0; width: 392px; height: 430px; background: rgba(252,247,235,.6); border: 2px dashed rgba(23,34,62,.22); border-radius: 18px; }
+  .col h4 { font-family: 'JetBrains Mono', monospace; font-size: 19px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); padding: 20px 22px 0; display: flex; justify-content: space-between; }
+  .kcard { position: absolute; width: 352px; height: 132px; background: var(--card); border: 3px solid var(--ink); border-radius: 14px; padding: 14px 18px; }
+  .kcard b { font-size: 30px; display: block; letter-spacing: -0.01em; }
+  .kcard span { font-size: 21px; color: var(--muted); display: block; margin-top: 2px; }
+  .kcard .chip { position: absolute; right: 14px; top: 14px; font-size: 14px; padding: 4px 8px; }
+
+  .phone { position: absolute; width: 470px; height: 900px; border-radius: 58px; background: var(--ink); padding: 14px; box-shadow: 0 40px 80px -30px rgba(23,34,62,.5); }
+  .screen { position: absolute; inset: 14px; border-radius: 46px; overflow: hidden; background: var(--wa-bg); }
+  .wa-head { height: 128px; background: var(--wa-head); color: #fff; display: flex; align-items: flex-end; gap: 14px; padding: 0 22px 18px; }
+  .wa-av { width: 52px; height: 52px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+  .wa-name { font-weight: 700; font-size: 23px; line-height: 1.1; } .wa-sub { font-size: 16px; opacity: .8; }
+  .bub { position: absolute; max-width: 370px; font-size: 23px; line-height: 1.3; padding: 13px 16px 12px; border-radius: 14px; box-shadow: 0 1px 1px rgba(0,0,0,.08); color: #111B21; }
+  .bub.in { left: 18px; background: #fff; border-top-left-radius: 4px; }
+  .bub.out { right: 18px; background: var(--wa-out); border-top-right-radius: 4px; }
+  .bub small { display: block; text-align: right; font-size: 13px; color: #667781; margin-top: 4px; }
+  .typing { position: absolute; left: 18px; background: #fff; border-radius: 14px; padding: 16px 18px; display: flex; gap: 7px; }
+  .typing i { width: 10px; height: 10px; border-radius: 50%; background: #8696A0; display: block; }
+</style>
+</head>
+<body>
+<style>
+  .note { position: absolute; width: 460px; background: var(--card); border: 3px solid var(--ink); border-radius: 14px; padding: 16px 20px; box-shadow: 0 14px 30px -14px rgba(23,34,62,.35); }
+  .note small { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px; letter-spacing: .12em; text-transform: uppercase; color: var(--orange-deep); }
+  .note small i { width: 9px; height: 9px; border-radius: 50%; background: var(--orange); display: block; }
+  .note b { display: block; font-size: 27px; letter-spacing: -0.01em; margin-top: 4px; white-space: nowrap; }
+  .code { font-family: 'JetBrains Mono', monospace; font-size: 24px; line-height: 1.75; padding: 26px 30px; white-space: pre; }
+  .code .k { color: #C04D2B; } .code .s { color: #3D7B5F; } .code .c { color: #8A8FA3; }
+  .row { position: absolute; left: 30px; right: 30px; height: 96px; display: flex; align-items: center; gap: 20px; border-bottom: 2px solid rgba(23,34,62,.08); }
+  .row b { font-size: 27px; font-weight: 500; letter-spacing: -0.01em; }
+  .row time { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 18px; color: var(--muted); }
+  .chk { flex: none; width: 40px; height: 40px; }
+  #breath { position: absolute; left: 960px; top: 540px; width: 900px; height: 900px; margin: -450px 0 0 -450px; border-radius: 50%; background: var(--peach); }
+</style>
+<div id="stage">
+  <div class="peach" id="peach"></div>
+
+  <!-- 1 BUILDING -->
+  <div class="scene" id="s1">
+    <div class="abs" style="left:140px; top:190px"><span class="tag">Para founders que construyen</span></div>
+    <div class="abs h" style="left:132px; top:340px; font-size:124px">
+      <span class="line" id="s1l1">Estás construyendo</span>
+      <span class="line" id="s1l2"><em class="o">tu producto.</em></span>
+    </div>
+    <div class="win" id="s1win" style="left:1200px; top:230px; width:600px; height:540px">
+      <div class="win-bar"><div class="dot3"><i></i><i></i><i></i></div><div class="win-title">producto.tsx</div></div>
+      <div class="code" id="s1code"></div>
+    </div>
+    <div class="note" id="s1n1" style="left:1060px; top:690px; transform-origin:center"><small><i></i>Pendiente</small><b>Seguimiento a Acme · hace 9 días</b></div>
+    <div class="note" id="s1n2" style="left:1290px; top:830px"><small><i></i>Pendiente</small><b>37 leads sin contactar</b></div>
+  </div>
+
+  <!-- 2 PILE-UP -->
+  <div class="scene" id="s2">
+    <div class="abs" id="s2head" style="left:120px; top:70px; z-index:5">
+      <div class="h" style="font-size:96px">Y mientras, se te acumula</div>
+      <div class="h" style="font-size:96px"><em class="o">todo lo demás.</em></div>
+    </div>
+    <div class="abs" id="s2count" style="right:120px; top:110px; z-index:5; text-align:right">
+      <div class="eyebrow" style="font-size:20px">Pendientes</div>
+      <div class="h o" id="s2num" style="font-size:110px; font-variant-numeric: tabular-nums">0</div>
+    </div>
+    <div id="pile"></div>
+  </div>
+
+  <!-- 3 BREATHE -->
+  <div class="scene" id="s3">
+    <div id="breath"></div>
+    <div class="abs h" id="s3a" style="left:0; right:0; top:330px; text-align:center; font-size:250px">Respira<span class="o">.</span></div>
+    <div class="abs" id="s3b" style="left:0; right:0; top:660px; display:flex; justify-content:center; align-items:center; gap:28px">
+      <svg width="130" height="90" viewBox="0 0 120 82" style="overflow:visible"><circle cx="54" cy="45" r="34" fill="#E7623D"/><polyline id="s3zig" points="8,64 44,40 66,56 102,28" fill="none" stroke="#17223E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="104" cy="27" r="7.5" fill="#17223E"/></svg>
+      <div class="h" style="font-size:96px">Tom se encarga<span class="o">.</span></div>
+    </div>
+  </div>
+
+  <!-- 4 YOU BUILD, TOM SELLS -->
+  <div class="scene" id="s4">
+    <div class="abs h" style="left:120px; top:250px; font-size:112px">
+      <span class="line" id="s4l1">Tú sigues</span>
+      <span class="line" id="s4l2">construyendo.</span>
+      <span class="line" id="s4l3" style="margin-top:40px">Tom sigue</span>
+      <span class="line" id="s4l4"><em class="o">vendiendo.</em></span>
+    </div>
+    <div class="win" id="s4win" style="left:1000px; top:140px; width:800px; height:800px">
+      <div class="win-bar"><div class="dot3"><i></i><i></i><i></i></div><div class="win-title">Hoy · Tom</div>
+        <div class="agent"><span class="pulse" id="s4pulse"></span>Trabajando</div></div>
+      <div id="feed" class="abs" style="left:0; right:0; top:84px; bottom:0"></div>
+    </div>
+  </div>
+
+  <!-- 5 WAKE UP TO MEETINGS -->
+  <div class="scene" id="s5">
+    <div class="abs h" style="left:120px; top:270px; font-size:112px">
+      <span class="line" id="s5l1">Despierta con</span>
+      <span class="line" id="s5l2">reuniones,</span>
+      <span class="line" id="s5l3"><em class="o">no con pendientes.</em></span>
+    </div>
+    <div class="phone" id="s5phone" style="left:1290px; top:90px">
+      <div class="screen">
+        <div class="wa-head">
+          <div class="wa-av"><svg width="36" height="26" viewBox="0 0 120 82"><circle cx="54" cy="45" r="34" fill="#E7623D"/><polyline points="8,64 44,40 66,56 102,28" fill="none" stroke="#17223E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div class="wa-name">Tom · GoTom</div><div class="wa-sub">en línea</div></div>
+        </div>
+        <div class="bub in" id="b1" style="top:160px">Buenos días. Mientras dormías:<br><br><b>✓</b> Laura (Acme) confirmó el jueves 10:00<br><b>✓</b> Nova Labs pidió más info. Ya se la envié<br><b>✓</b> Cero seguimientos pendientes<small>7:02</small></div>
+        <div class="bub in" id="b2" style="top:500px">El brief de Acme ya está listo. Tú enfócate en el producto.<small>7:02</small></div>
+        <div class="bub out" id="b3" style="top:640px">Eres un crack, Tom<small>7:15 ✓✓</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 OUTRO -->
+  <div class="scene" id="s6">
+    <div class="abs" style="left:0; right:0; top:190px; display:flex; justify-content:center; align-items:center; gap:34px" id="s6logo">
+      <svg width="170" height="116" viewBox="0 0 120 82" style="overflow:visible">
+        <circle id="s6circ" cx="54" cy="45" r="34" fill="#E7623D"/>
+        <polyline id="s6zig" points="8,64 44,40 66,56 102,28" fill="none" stroke="#17223E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="104" cy="27" r="7.5" fill="#17223E"/>
+      </svg>
+      <div class="h" style="font-size:150px; letter-spacing:-0.05em">Go<span class="o">Tom</span></div>
+    </div>
+    <div class="abs h" id="s6line" style="left:0; right:0; top:430px; text-align:center; font-size:150px">
+      Tú construyes. <em class="o">Tom vende.</em>
+    </div>
+    <div class="abs" id="s6cta" style="left:0; right:0; top:700px; display:flex; justify-content:center; align-items:center; gap:28px">
+      <div class="btn" id="s6btn" style="font-size:40px; padding:26px 44px">Probar gratis <span>→</span></div>
+      <div style="font-size:44px; font-weight:700; letter-spacing:-0.02em">gotom.app</div>
+    </div>
+    <div class="abs" id="s6fine" style="left:0; right:0; top:860px; display:flex; justify-content:center; align-items:center; gap:12px; font-size:26px; color:var(--muted)">
+      <span style="width:12px; height:12px; border-radius:50%; background:var(--green); display:block"></span>14 días gratis · sin tarjeta · setup en 5 minutos
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, d) => clamp((t - a) / d);
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const back = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3*Math.pow(x-1,3) + c1*Math.pow(x-1,2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+
+function rise(el, t, a, d = .45, dy = 40) {
+  const p = eo(prog(t, a, d));
+  el.style.opacity = p; el.style.transform = `translateY(${(1 - p) * dy}px)`;
+}
+function pop(el, t, a, d = .4, from = .85, rot = 0) {
+  const x = prog(t, a, d);
+  el.style.opacity = clamp(x * 2.5); el.style.transform = `rotate(${rot}deg) scale(${lerp(from, 1, back(x))})`;
+}
+
+// Scene windows on the 120 BPM beat grid (0.5s)
+const S = { s1: [0, 4], s2: [4, 8], s3: [8, 10.5], s4: [10.5, 15.5], s5: [15.5, 19.5], s6: [19.5, 24] };
+const OUT = .3;
+function sceneAlpha(t, [a, b], last, noOut) {
+  const inP = a === 0 ? 1 : eo(prog(t, a, .3));
+  const outP = last || noOut ? 0 : prog(t, b - OUT, OUT);
+  return t < a || t >= b ? 0 : inP * (1 - outP);
+}
+
+// 1 — code being written
+const CODE = [
+  ['<span class="k">export function</span> Onboarding() {', 0.5],
+  ['  <span class="k">const</span> [step, setStep] = useState(<span class="s">1</span>)', 0.8],
+  ['  <span class="c">// el flujo que tus usuarios aman</span>', 1.1],
+  ['  <span class="k">return</span> &lt;Wizard', 1.4],
+  ['    steps={pasos}', 1.65],
+  ['    onDone={celebrar}', 1.9],
+  ['  /&gt;', 2.15],
+  ['}', 2.35],
+];
+
+// 2 — the pile of pending GTM work
+const PILE = [
+  [110, 340, -3, 4.35, 'Seguimiento a Acme · hace 9 días'],
+  [700, 350, 2, 4.55, '37 leads sin contactar'],
+  [1290, 380, -2, 4.75, '¿Le respondiste a Laura?'],
+  [300, 520, 3, 4.95, 'Actualizar el CRM'],
+  [920, 510, -4, 5.1, 'Buscar contactos en LinkedIn'],
+  [1400, 570, 2, 5.25, 'Follow-up #3 a Kuna Pay'],
+  [130, 700, -2, 5.4, 'Agendar demo con Rumbo'],
+  [620, 680, 4, 5.55, 'Email a Nova Labs (borrador)'],
+  [1130, 720, -3, 5.7, 'Lista de prospectos a medias'],
+  [400, 860, 2, 5.85, 'Responder WhatsApp de Diego'],
+  [940, 870, -2, 6.0, 'Brisa Café: escribir en marzo'],
+  [1420, 840, 3, 6.15, 'Mover deals en el pipeline'],
+  [220, 430, 5, 6.3, 'Follow-up #2 a Acme'],
+  [1000, 420, -5, 6.42, 'Investigar mi ICP'],
+  [780, 780, 4, 6.54, 'Cold email (en blanco)'],
+  [1350, 470, -3, 6.66, '3 respuestas sin leer'],
+  [60, 590, 2, 6.78, '¿Quién era el de Andes?'],
+  [1200, 920, -4, 6.9, 'Seguimiento a Nova Labs'],
+  [560, 450, 3, 7.02, 'Preparar la demo del jueves'],
+];
+const pile = $('pile');
+PILE.forEach(([x, y, r, a, txt], i) => {
+  const d = document.createElement('div'); d.className = 'note'; d.id = 'p' + i;
+  d.style.left = x + 'px'; d.style.top = y + 'px'; d.style.zIndex = i + 1;
+  d.innerHTML = `<small><i></i>Pendiente</small><b>${txt}</b>`; pile.appendChild(d);
+});
+
+// 4 — Tom's quiet day
+const FEED = [
+  ['Encontró cuentas nuevas para tu ICP', '9:12', 11.6],
+  ['Le escribió a Acme sobre su dolor real', '9:40', 12.1],
+  ['Hizo el seguimiento a Nova Labs', '11:05', 12.6],
+  ['Leyó a Laura: quiere una reunión', '13:22', 13.1],
+  ['Movió Acme a Reunión en tu kanban', '13:23', 13.6],
+  ['Te preguntó por WhatsApp: ¿jueves 10:00?', '13:24', 14.1],
+];
+const CHK = '<svg class="chk" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#3D7B5F"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+FEED.forEach(([txt, tm], i) => {
+  const d = document.createElement('div'); d.className = 'row'; d.id = 'r' + i; d.style.top = (i * 112 + 10) + 'px';
+  d.innerHTML = `${CHK}<b>${txt}</b><time>${tm}</time>`; $('feed').appendChild(d);
+});
+
+function render(t) {
+  const pc = $('peach');
+  pc.style.left = `${1400 + Math.sin(t * .35) * 40}px`; pc.style.top = `${560 + Math.cos(t * .3) * 30}px`;
+  for (const [k, w] of Object.entries(S)) $(k).style.opacity = sceneAlpha(t, w, k === 's6', k === 's2');
+
+  // 1 BUILDING
+  if (t < S.s1[1]) {
+    rise($('s1l1'), t, .1, .5, 60); rise($('s1l2'), t, .5, .5, 60);
+    rise($('s1win'), t, .25, .5, 50);
+    $('s1code').innerHTML = CODE.filter(([, a]) => t >= a).map(([l]) => l).join('\n') + (t < 2.6 ? '<span class="caret"></span>' : '');
+    pop($('s1n1'), t, 2.9, .35, .7, -3);
+    pop($('s1n2'), t, 3.4, .35, .7, 2);
+    const fade = prog(t, 3.7, .3); $('s1').style.opacity = 1 - eo(fade);
+  }
+
+  // 2 PILE-UP — pending work buries the screen, shaking slightly, then gets swept away
+  if (t >= S.s2[0] && t < S.s2[1]) {
+    rise($('s2head'), t, 4.05, .4, 30);
+    rise($('s2count'), t, 4.2, .4, 20);
+    const sweep = eio(prog(t, 7.65, .35));
+    const stress = prog(t, 5.5, 2.1);
+    let n = 0;
+    PILE.forEach(([x, y, r, a], i) => {
+      const el = $('p' + i); const p = prog(t, a, .3);
+      if (t >= a) n++;
+      const jx = Math.sin(t * 31 + i * 1.7) * 3 * stress, jy = Math.cos(t * 27 + i) * 2 * stress;
+      const dx = (x + 230 - 960), dy = (y + 50 - 640), L = Math.hypot(dx, dy) || 1;
+      const fx = dx / L * 1400 * sweep, fy = dy / L * 1000 * sweep;
+      el.style.opacity = clamp(p * 2.5) * (1 - sweep);
+      el.style.transform = `translate(${jx + fx}px, ${jy + fy}px) rotate(${r + sweep * r * 4}deg) scale(${lerp(.7, 1, back(p))})`;
+    });
+    $('s2num').textContent = Math.round(n * 23 / PILE.length);
+    $('s2head').style.opacity = Math.min(+$('s2head').style.opacity, 1 - sweep);
+    $('s2count').style.opacity = Math.min(+$('s2count').style.opacity, 1 - sweep);
+  }
+
+  // 3 BREATHE
+  if (t >= S.s3[0] && t < S.s3[1]) {
+    const b = eo(prog(t, 8.0, 1.6)); $('breath').style.transform = `scale(${lerp(.2, 1, b) * (1 + .03 * Math.sin((t - 8) * 2.4))})`;
+    $('breath').style.opacity = .9 * b;
+    rise($('s3a'), t, 8.05, .6, 30);
+    rise($('s3b'), t, 9.0, .45, 30);
+    const zig = $('s3zig'); zig.style.strokeDasharray = 130; zig.style.strokeDashoffset = 130 * (1 - eo(prog(t, 9.1, .4)));
+  }
+
+  // 4 YOU BUILD / TOM SELLS
+  if (t >= S.s4[0] && t < S.s4[1]) {
+    rise($('s4l1'), t, 10.55, .45, 40); rise($('s4l2'), t, 10.7, .45, 40);
+    rise($('s4l3'), t, 11.3, .45, 40); rise($('s4l4'), t, 11.45, .45, 40);
+    rise($('s4win'), t, 10.8, .5, 60);
+    FEED.forEach(([, , a], i) => rise($('r' + i), t, a, .4, 24));
+    $('s4pulse').style.opacity = .4 + .6 * Math.abs(Math.sin(t * 5));
+  }
+
+  // 5 WAKE UP
+  if (t >= S.s5[0] && t < S.s5[1]) {
+    rise($('s5l1'), t, 15.55, .45, 40); rise($('s5l2'), t, 15.7, .45, 40); rise($('s5l3'), t, 16.2, .5, 40);
+    rise($('s5phone'), t, 15.6, .55, 80);
+    pop($('b1'), t, 16.0, .35, .9);
+    pop($('b2'), t, 17.0, .35, .9);
+    pop($('b3'), t, 18.0, .35, .9);
+  }
+
+  // 6 OUTRO
+  if (t >= S.s6[0]) {
+    const c = back(prog(t, 19.55, .4)); $('s6circ').setAttribute('r', 34 * clamp(c, 0, 2));
+    const zig = $('s6zig'); zig.style.strokeDasharray = 130; zig.style.strokeDashoffset = 130 * (1 - eo(prog(t, 19.7, .4)));
+    rise($('s6logo'), t, 19.55, .4, 20);
+    rise($('s6line'), t, 20.0, .5, 50);
+    rise($('s6cta'), t, 20.6, .4, 20);
+    rise($('s6fine'), t, 21.0, .4, 16);
+    const press = prog(t, 22.0, .12) * (1 - prog(t, 22.12, .2));
+    const bx = prog(t, 20.6, .45);
+    $('s6btn').style.opacity = clamp(bx * 2.5);
+    $('s6btn').style.transform = `scale(${lerp(.8, 1, back(bx)) * (1 - press * .05)})`;
+    $('s6btn').style.background = press > 0 ? '#C04D2B' : '#E7623D';
+  }
+}
+window.render = render;
+window.DURATION = 24.0;
+</script>
+</body>
+</html>
