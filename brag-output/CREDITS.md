@@ -1,0 +1,4 @@
+- Hecho con /brag-slim: https://github.com/latent-spaces/brag
+- Música: ende.app, "Happy Beats / Business Moves vol. 1" (CC BY 4.0)
+- SFX: Kenney (CC0)
+- Fuentes: DM Sans, JetBrains Mono (SIL OFL)

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>GoTom brag</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --bg: #EFE9D9; --ink: #17223E; --ink-2: #3A4460; --muted: #6B7086;
+    --orange: #E7623D; --orange-deep: #C04D2B; --orange-soft: #FCE4DA; --peach: #F0DFCC;
+    --card: #FCF7EB; --yellow: #F2C94C; --green: #3D7B5F; --green-soft: #DDEBDF;
+    --wa-bg: #ECE5DD; --wa-out: #D9FDD3; --wa-head: #1F6E5C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+  body { font-family: 'DM Sans', sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: absolute; inset: 0; overflow: hidden; background: var(--bg); }
+  .abs { position: absolute; }
+  .scene { position: absolute; inset: 0; opacity: 0; }
+  .peach { position: absolute; width: 1100px; height: 1100px; border-radius: 50%; background: var(--peach); opacity: .75; }
+  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 26px; letter-spacing: .14em;
+         text-transform: uppercase; background: var(--yellow); border: 3px solid var(--ink); border-radius: 8px; padding: 10px 20px; color: var(--ink); }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 24px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .h { font-weight: 800; letter-spacing: -0.045em; line-height: 1.02; color: var(--ink); white-space: nowrap; }
+  .h em { font-style: italic; font-weight: 500; letter-spacing: -0.03em; }
+  .o { color: var(--orange); }
+  .line { display: block; will-change: transform, opacity; }
+  .card { background: var(--card); border: 3px solid var(--ink); border-radius: 18px; }
+  .btn { display: inline-flex; align-items: center; gap: 14px; background: var(--orange); color: #fff; font-weight: 700; border-radius: 14px; }
+  .chip { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 5px 10px; }
+  .feed { display:flex; align-items:center; gap:14px; padding:20px 24px; font-size:25px; border-radius:14px; margin-bottom:18px; }
+  .caret { display: inline-block; width: 3px; height: 1.05em; background: var(--orange); vertical-align: -0.15em; margin-left: 2px; }
+
+  /* app window */
+  .win { position: absolute; background: var(--card); border: 3px solid var(--ink); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 60px -30px rgba(23,34,62,.35); }
+  .win-bar { height: 64px; border-bottom: 2px solid rgba(23,34,62,.12); display: flex; align-items: center; padding: 0 26px; gap: 16px; background: #F7F1E2; }
+  .dot3 { display: flex; gap: 9px; } .dot3 i { width: 14px; height: 14px; border-radius: 50%; background: rgba(23,34,62,.18); display: block; }
+  .win-title { font-weight: 700; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+  .agent { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--orange-deep); background: var(--orange-soft); border: 2px solid var(--orange); border-radius: 999px; padding: 6px 14px; }
+  .pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); display: block; }
+
+  .mail { position: absolute; left: 0; right: 0; height: 104px; padding: 18px 26px; border-bottom: 2px solid rgba(23,34,62,.08); }
+  .mail b { font-size: 21px; display: block; }
+  .mail span { font-size: 18px; color: var(--muted); display: block; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .col { position: absolute; top: 0; width: 392px; height: 430px; background: rgba(252,247,235,.6); border: 2px dashed rgba(23,34,62,.22); border-radius: 18px; }
+  .col h4 { font-family: 'JetBrains Mono', monospace; font-size: 19px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); padding: 20px 22px 0; display: flex; justify-content: space-between; }
+  .kcard { position: absolute; width: 352px; height: 132px; background: var(--card); border: 3px solid var(--ink); border-radius: 14px; padding: 14px 18px; }
+  .kcard b { font-size: 30px; display: block; letter-spacing: -0.01em; }
+  .kcard span { font-size: 21px; color: var(--muted); display: block; margin-top: 2px; }
+  .kcard .chip { position: absolute; right: 14px; top: 14px; font-size: 14px; padding: 4px 8px; }
+
+  .phone { position: absolute; width: 470px; height: 900px; border-radius: 58px; background: var(--ink); padding: 14px; box-shadow: 0 40px 80px -30px rgba(23,34,62,.5); }
+  .screen { position: absolute; inset: 14px; border-radius: 46px; overflow: hidden; background: var(--wa-bg); }
+  .wa-head { height: 128px; background: var(--wa-head); color: #fff; display: flex; align-items: flex-end; gap: 14px; padding: 0 22px 18px; }
+  .wa-av { width: 52px; height: 52px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+  .wa-name { font-weight: 700; font-size: 23px; line-height: 1.1; } .wa-sub { font-size: 16px; opacity: .8; }
+  .bub { position: absolute; max-width: 370px; font-size: 23px; line-height: 1.3; padding: 13px 16px 12px; border-radius: 14px; box-shadow: 0 1px 1px rgba(0,0,0,.08); color: #111B21; }
+  .bub.in { left: 18px; background: #fff; border-top-left-radius: 4px; }
+  .bub.out { right: 18px; background: var(--wa-out); border-top-right-radius: 4px; }
+  .bub small { display: block; text-align: right; font-size: 13px; color: #667781; margin-top: 4px; }
+  .typing { position: absolute; left: 18px; background: #fff; border-radius: 14px; padding: 16px 18px; display: flex; gap: 7px; }
+  .typing i { width: 10px; height: 10px; border-radius: 50%; background: #8696A0; display: block; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="peach" id="peach"></div>
+
+  <!-- 1 HOOK -->
+  <div class="scene" id="s1">
+    <div class="abs" style="left:150px; top:170px"><span class="tag" id="s1tag">Lo que viene en GoTom</span></div>
+    <div class="abs h" style="left:142px; top:300px; font-size:178px">
+      <span class="line" id="s1l1">Tu GTM ya no</span>
+      <span class="line" id="s1l2">lo haces tú<span class="o">.</span></span>
+      <span class="line" id="s1l3">Lo hace <em class="o">Tom.</em></span>
+    </div>
+    <div class="abs" style="left:1330px; top:330px; width:460px">
+      <div class="card feed" id="f0"><span class="pulse"></span><span><b>Tom</b> redactó 3 emails</span></div>
+      <div class="card feed" id="f1"><span class="pulse"></span><span><b>Tom</b> movió Acme a Reunión</span></div>
+      <div class="card feed" id="f2"><span class="pulse"></span><span><b>Tom</b> te escribió por WhatsApp</span></div>
+    </div>
+  </div>
+
+  <!-- 2 REVEAL -->
+  <div class="scene" id="s2">
+    <div class="abs" id="s2logo" style="left:0; right:0; top:330px; display:flex; justify-content:center; align-items:center; gap:46px">
+      <svg id="s2mark" width="250" height="170" viewBox="0 0 120 82" style="overflow:visible">
+        <circle id="s2circ" cx="54" cy="45" r="34" fill="#E7623D"/>
+        <polyline id="s2zig" points="8,64 44,40 66,56 102,28" fill="none" stroke="#17223E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle id="s2tip" cx="104" cy="27" r="7.5" fill="#17223E"/>
+      </svg>
+      <div class="h" id="s2word" style="font-size:250px; letter-spacing:-0.05em">Go<span class="o">Tom</span></div>
+    </div>
+    <div class="abs h" id="s2sub" style="left:0; right:0; top:700px; text-align:center; font-size:66px; font-weight:700; letter-spacing:-0.03em">
+      Un equipo de agentes que hace tu <em class="o">go-to-market.</em>
+    </div>
+  </div>
+
+  <!-- 3 EMAILS -->
+  <div class="scene" id="s3">
+    <div class="abs" id="s3head" style="left:120px; top:92px">
+      <div class="eyebrow" style="margin-bottom:18px">01 · Emails</div>
+      <div class="h" style="font-size:92px">Escribe tus emails. <span class="o">Lee cada respuesta.</span></div>
+    </div>
+    <div class="win" id="s3win" style="left:120px; top:330px; width:1680px; height:590px">
+      <div class="win-bar"><div class="dot3"><i></i><i></i><i></i></div><div class="win-title">Bandeja · GoTom</div>
+        <div class="agent" id="s3agent"><span class="pulse" id="s3pulse"></span><span id="s3status">Tom está leyendo…</span></div></div>
+      <div class="abs" style="left:0; top:64px; width:560px; bottom:0; border-right:2px solid rgba(23,34,62,.12)">
+        <div class="mail" id="m0" style="top:0"><b>Laura Méndez · Acme</b><span>Re: Distribuidores en Monterrey — Suena interesante…</span></div>
+        <div class="mail" id="m1" style="top:104px"><b>Diego Ruiz · Nova Labs</b><span>Re: Pilotos Q1 — Pásame más info y lo reviso</span></div>
+        <div class="mail" id="m2" style="top:208px"><b>Sofía Paz · Brisa Café</b><span>Re: Retail en Lima — Ahora no, escríbeme en marzo</span></div>
+        <div class="mail" id="m3" style="top:312px"><b>Kuna Pay</b><span>Enviado por Tom · Personalizado por dolor real</span></div>
+        <div class="mail" id="m4" style="top:416px; border-bottom:0"><b>Rumbo</b><span>Programado por Tom · Mañana 8:30</span></div>
+        <div class="abs" id="m0hl" style="left:0; top:0; width:8px; height:104px; background:var(--orange); transform-origin:top"></div>
+      </div>
+      <div class="abs" style="left:600px; top:100px; right:40px">
+        <div id="s3read" style="font-size:24px; line-height:1.45; color:var(--ink-2)">
+          <div style="font-weight:700; color:var(--ink); font-size:26px">Laura Méndez <span style="font-weight:400; color:var(--muted)">· Head of Growth, Acme</span></div>
+          <div style="margin-top:8px">“Suena interesante. ¿Podemos verlo la próxima semana con mi equipo?”</div>
+          <div style="margin-top:14px; display:flex; gap:10px">
+            <span class="chip" id="s3c1" style="background:var(--green-soft); color:var(--green); border:2px solid var(--green)">Intención: quiere reunión</span>
+            <span class="chip" id="s3c2" style="background:var(--orange-soft); color:var(--orange-deep); border:2px solid var(--orange)">Prioridad alta</span>
+          </div>
+        </div>
+        <div class="card" id="s3draft" style="margin-top:34px; padding:24px 28px; height:230px; border-radius:16px">
+          <div class="eyebrow" style="font-size:18px; letter-spacing:.14em; display:flex; justify-content:space-between"><span>Borrador de Tom → Laura</span><span id="s3dstate" style="color:var(--orange-deep)">Escribiendo</span></div>
+          <div id="s3type" style="margin-top:14px; font-size:26px; line-height:1.45; color:var(--ink)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 KANBAN -->
+  <div class="scene" id="s4">
+    <div class="abs" id="s4head" style="left:120px; top:92px">
+      <div class="eyebrow" style="margin-bottom:18px">02 · Pipeline</div>
+      <div class="h" style="font-size:92px">Avanza a tus clientes <span class="o">en el kanban.</span></div>
+    </div>
+    <div class="abs" id="s4board" style="left:120px; top:350px; width:1680px; height:430px">
+      <div class="col" id="c0" style="left:0"><h4>Prospecto <span>12</span></h4></div>
+      <div class="col" id="c1" style="left:429px"><h4>Contactado <span>8</span></h4></div>
+      <div class="col" id="c2" style="left:858px"><h4>Respondió <span>3</span></h4></div>
+      <div class="col" id="c3" style="left:1287px"><h4>Reunión <span>1</span></h4></div>
+      <div class="kcard" id="k0"><b>Andes Logística</b><span>Retail · ICP 2</span></div>
+      <div class="kcard" id="k1"><b>Rumbo</b><span>SaaS B2B · ICP 1</span></div>
+      <div class="kcard" id="k2"><b>Nova Labs</b><span>Email 2 enviado</span></div>
+      <div class="kcard" id="k3"><b>Brisa Café</b><span>Seguimiento en marzo</span></div>
+      <div class="kcard" id="k4"><b>Acme</b><span>Quiere reunión</span><span class="chip" id="k4chip" style="background:var(--orange-soft); color:var(--orange-deep)">Tom</span></div>
+      <div class="kcard" id="k5"><b>Kuna Pay</b><span>Jue 3:00 pm</span></div>
+    </div>
+    <div class="abs card" id="s4toast" style="right:120px; top:820px; padding:16px 24px; font-size:24px; display:flex; align-items:center; gap:14px; border-radius:14px">
+      <span class="pulse"></span><span><b>Tom</b> movió <b>Acme</b> a Reunión</span>
+    </div>
+  </div>
+
+  <!-- 5 WHATSAPP + APP -->
+  <div class="scene" id="s5">
+    <div class="abs" id="s5head" style="left:120px; top:92px">
+      <div class="eyebrow" style="margin-bottom:18px">03 · Tú decides</div>
+      <div class="h" style="font-size:92px; line-height:1.05">Te pregunta<br>antes de actuar<span class="o">.</span></div>
+      <div style="font-size:38px; color:var(--ink-2); margin-top:22px; font-weight:500">Por <b style="color:var(--ink)">WhatsApp</b> o en la <b style="color:var(--ink)">app web</b>.</div>
+    </div>
+    <div class="win" id="s5win" style="left:120px; top:580px; width:960px; height:370px">
+      <div class="win-bar"><div class="dot3"><i></i><i></i><i></i></div><div class="win-title">app.gotom</div>
+        <div class="agent"><span class="pulse"></span>Tom te pregunta</div></div>
+      <div style="padding:26px 30px">
+        <div style="font-size:27px; font-weight:700; letter-spacing:-0.01em">Laura (Acme) quiere reunión. ¿Qué horario le propongo?</div>
+        <div style="display:flex; gap:16px; margin-top:22px">
+          <div id="opt1" style="font-size:24px; font-weight:700; padding:14px 24px; border:3px solid var(--ink); border-radius:12px">Jueves 10:00</div>
+          <div style="font-size:24px; font-weight:700; padding:14px 24px; border:3px solid rgba(23,34,62,.25); border-radius:12px; color:var(--muted)">Jueves 15:30</div>
+        </div>
+        <div id="s5cal" style="margin-top:24px; display:flex; align-items:center; gap:16px; background:var(--green-soft); border:2px solid var(--green); border-radius:12px; padding:14px 20px; width:fit-content">
+          <svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#3D7B5F"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size:24px; color:var(--green); font-weight:700">Reunión agendada · Jue 10:00 · Brief listo</span>
+        </div>
+      </div>
+    </div>
+    <div class="phone" id="s5phone" style="left:1290px; top:90px">
+      <div class="screen">
+        <div class="wa-head">
+          <div class="wa-av"><svg width="36" height="26" viewBox="0 0 120 82"><circle cx="54" cy="45" r="34" fill="#E7623D"/><polyline points="8,64 44,40 66,56 102,28" fill="none" stroke="#17223E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div class="wa-name">Tom · GoTom</div><div class="wa-sub">en línea</div></div>
+        </div>
+        <div class="bub in" id="b1" style="top:160px">Laura de <b>Acme</b> respondió y quiere reunión con su equipo. ¿Le propongo <b>jueves 10:00</b> o <b>15:30</b>?<small>9:41</small></div>
+        <div class="bub out" id="b2" style="top:380px">Jueves 10:00<small>9:42 ✓✓</small></div>
+        <div class="typing" id="b3t" style="top:480px"><i></i><i></i><i></i></div>
+        <div class="bub in" id="b3" style="top:480px">Listo. Invitación enviada a Laura y te dejo el brief de Acme para el jueves.<small>9:42</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 OUTRO -->
+  <div class="scene" id="s6">
+    <div class="abs" style="left:0; right:0; top:200px; display:flex; justify-content:center; align-items:center; gap:34px" id="s6logo">
+      <svg width="170" height="116" viewBox="0 0 120 82" style="overflow:visible">
+        <circle id="s6circ" cx="54" cy="45" r="34" fill="#E7623D"/>
+        <polyline id="s6zig" points="8,64 44,40 66,56 102,28" fill="none" stroke="#17223E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="104" cy="27" r="7.5" fill="#17223E"/>
+      </svg>
+      <div class="h" style="font-size:150px; letter-spacing:-0.05em">Go<span class="o">Tom</span></div>
+    </div>
+    <div class="abs h" id="s6line" style="left:0; right:0; top:440px; text-align:center; font-size:130px">
+      Tú cierras. <em class="o">Tom hace el resto.</em>
+    </div>
+    <div class="abs" id="s6cta" style="left:0; right:0; top:690px; display:flex; justify-content:center; align-items:center; gap:28px">
+      <div class="btn" id="s6btn" style="font-size:40px; padding:26px 44px">Probar gratis <span>→</span></div>
+      <div style="font-size:44px; font-weight:700; letter-spacing:-0.02em">gotom.app</div>
+    </div>
+    <div class="abs" id="s6fine" style="left:0; right:0; top:850px; display:flex; justify-content:center; align-items:center; gap:12px; font-size:26px; color:var(--muted)">
+      <span style="width:12px; height:12px; border-radius:50%; background:var(--green); display:block"></span>14 días gratis · sin tarjeta · setup en 5 minutos
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, d) => clamp((t - a) / d);
+const eo = (x) => 1 - Math.pow(1 - x, 3);           // easeOutCubic
+const eio = (x) => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const back = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3*Math.pow(x-1,3) + c1*Math.pow(x-1,2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+
+function rise(el, t, a, d = .45, dy = 40) {
+  const p = eo(prog(t, a, d));
+  el.style.opacity = p; el.style.transform = `translateY(${(1 - p) * dy}px)`;
+}
+function pop(el, t, a, d = .4, from = .85) {
+  const x = prog(t, a, d); const s = lerp(from, 1, back(x));
+  el.style.opacity = clamp(x * 2.5); el.style.transform = `scale(${s})`;
+}
+
+// Scene windows (beats every 0.5s at 120 BPM)
+const S = { s1: [0, 3.5], s2: [3.5, 6.5], s3: [6.5, 10.5], s4: [10.5, 14.5], s5: [14.5, 19.5], s6: [19.5, 23.0] };
+const OUT = .3;  // content leaves before the cut, next enters after it (dip through background)
+
+function sceneAlpha(t, [a, b], last) {
+  const inP = a === 0 ? 1 : eo(prog(t, a, .3));
+  const outP = last ? 0 : prog(t, b - OUT, OUT);
+  return t < a || t >= b ? 0 : inP * (1 - outP);
+}
+function sceneLift(el, t, [a, b], last) {
+  const outP = last ? 0 : eio(prog(t, b - OUT, OUT));
+  el.style.transform = `translateY(${-outP * 40}px)`;
+}
+
+const draftText = 'Hola Laura, ¡genial! Te propongo el jueves a las 10:00 con tu equipo. Te llevo un plan para llenar la agenda de distribuidores en Monterrey.';
+
+// kanban layout
+const COLX = [0, 429, 858, 1287].map(x => x + 20);
+const ROWY = (i) => 80 + i * 152;
+const kcards = {
+  k0: { from: [0, 0] }, k1: { from: [0, 1] }, k2: { from: [1, 0], to: [2, 1], at: 12.5 },
+  k3: { from: [1, 1] }, k4: { from: [2, 0], to: [3, 1], at: 11.5 }, k5: { from: [3, 0] },
+};
+
+function render(t) {
+  // ambient peach circle drifts between scenes
+  const pc = $('peach');
+  pc.style.left = `${1400 + Math.sin(t * .35) * 40}px`; pc.style.top = `${560 + Math.cos(t * .3) * 30}px`;
+
+  for (const [k, w] of Object.entries(S)) {
+    const el = $(k); el.style.opacity = sceneAlpha(t, w, k === 's6'); sceneLift(el, t, w, k === 's6');
+  }
+
+  // 1 HOOK
+  if (t < S.s1[1]) {
+    pop($('s1tag'), t, .1, .4);
+    rise($('s1l1'), t, .25, .5, 70); rise($('s1l2'), t, .75, .5, 70); rise($('s1l3'), t, 1.25, .5, 70);
+    ['f0','f1','f2'].forEach((id, i) => rise($(id), t, 1.75 + i * .25, .4, 30));
+  }
+
+  // 2 REVEAL
+  if (t >= S.s2[0] && t < S.s2[1]) {
+    const c = back(prog(t, 3.6, .4)); $('s2circ').setAttribute('r', 34 * clamp(c, 0, 2));
+    const zig = $('s2zig'); const L = 130; zig.style.strokeDasharray = L; zig.style.strokeDashoffset = L * (1 - eo(prog(t, 3.85, .45)));
+    $('s2tip').style.opacity = prog(t, 4.25, .1);
+    const w = eo(prog(t, 4.0, .5)); $('s2word').style.opacity = w; $('s2word').style.transform = `translateX(${(1 - w) * -60}px)`;
+    rise($('s2sub'), t, 4.5, .5, 30);
+  }
+
+  // 3 EMAILS
+  if (t >= S.s3[0] && t < S.s3[1]) {
+    rise($('s3head'), t, 6.55, .45, 30);
+    rise($('s3win'), t, 6.75, .5, 60);
+    ['m0', 'm1', 'm2', 'm3', 'm4'].forEach((id, i) => rise($(id), t, 6.95 + i * .1, .35, 16));
+    const hl = eo(prog(t, 7.3, .3)); $('m0hl').style.transform = `scaleY(${hl})`; $('m0').style.background = `rgba(231,98,61,${.08 * hl})`;
+    rise($('s3read'), t, 7.35, .4, 16);
+    pop($('s3c1'), t, 7.75, .35); pop($('s3c2'), t, 7.9, .35);
+    rise($('s3draft'), t, 8.0, .35, 16);
+    const n = Math.floor(clamp((t - 8.2) / 1.65) * draftText.length);
+    const done = t >= 9.9;
+    $('s3type').innerHTML = draftText.slice(0, n) + (done ? '' : '<span class="caret"></span>');
+    $('s3status').textContent = t < 8.0 ? 'Tom está leyendo…' : (done ? 'Borrador listo' : 'Tom está escribiendo…');
+    $('s3dstate').textContent = done ? 'Listo para enviar' : 'Escribiendo';
+    $('s3dstate').style.color = done ? '#3D7B5F' : '#C04D2B';
+    $('s3pulse').style.opacity = .4 + .6 * Math.abs(Math.sin(t * 6));
+  }
+
+  // 4 KANBAN
+  if (t >= S.s4[0] && t < S.s4[1]) {
+    rise($('s4head'), t, 10.55, .45, 30);
+    ['c0', 'c1', 'c2', 'c3'].forEach((id, i) => rise($(id), t, 10.75 + i * .08, .4, 40));
+    Object.entries(kcards).forEach(([id, c], i) => {
+      const el = $(id);
+      let [col, row] = c.from; let x = COLX[col], y = ROWY(row), lift = 0;
+      if (c.to) {
+        const p = eio(prog(t, c.at - .5, .5));
+        x = lerp(COLX[c.from[0]], COLX[c.to[0]], p); y = lerp(ROWY(c.from[1]), ROWY(c.to[1]), p);
+        lift = Math.sin(Math.PI * p);
+      }
+      const a = eo(prog(t, 11.0 + i * .06, .35));
+      el.style.left = `${x}px`; el.style.top = `${y + (1 - a) * 24 - lift * 18}px`;
+      el.style.opacity = a;
+      el.style.transform = `rotate(${lift * -3}deg) scale(${1 + lift * .05})`;
+      el.style.boxShadow = `0 ${6 + lift * 24}px ${lift * 40}px -10px rgba(23,34,62,${.15 + lift * .25})`;
+      const landed = c.to && t >= c.at;
+      el.style.borderColor = landed && id === 'k4' ? '#E7623D' : '#17223E';
+      el.style.background = landed && id === 'k4' ? '#FCE4DA' : '#FCF7EB';
+    });
+    $('k2').querySelector('span').textContent = t >= 12.5 ? 'Respondió: “mándame info”' : 'Email 2 enviado';
+    $('k4').querySelector('span').textContent = t >= 11.5 ? 'Reunión por agendar' : 'Quiere reunión';
+    rise($('s4toast'), t, 11.6, .35, 24);
+  }
+
+  // 5 WHATSAPP + APP
+  if (t >= S.s5[0] && t < S.s5[1]) {
+    rise($('s5head'), t, 14.55, .45, 30);
+    rise($('s5phone'), t, 14.7, .55, 80);
+    rise($('s5win'), t, 14.9, .5, 50);
+    pop($('b1'), t, 15.3, .35, .9);
+    pop($('b2'), t, 16.5, .35, .9);
+    const o1 = prog(t, 16.5, .2);
+    $('opt1').style.background = o1 ? '#E7623D' : 'transparent'; $('opt1').style.color = o1 ? '#fff' : '#17223E'; $('opt1').style.borderColor = o1 ? '#E7623D' : '#17223E';
+    const ty = t >= 16.85 && t < 17.5; $('b3t').style.opacity = ty ? 1 : 0;
+    $('b3t').querySelectorAll('i').forEach((d, i) => d.style.transform = `translateY(${-Math.max(0, Math.sin(t * 12 - i * .9)) * 5}px)`);
+    pop($('b3'), t, 17.5, .35, .9);
+    pop($('s5cal'), t, 17.5, .4, .8);
+  }
+
+  // 6 OUTRO
+  if (t >= S.s6[0]) {
+    const c = back(prog(t, 19.55, .4)); $('s6circ').setAttribute('r', 34 * clamp(c, 0, 2));
+    const zig = $('s6zig'); zig.style.strokeDasharray = 130; zig.style.strokeDashoffset = 130 * (1 - eo(prog(t, 19.7, .4)));
+    rise($('s6logo'), t, 19.55, .4, 20);
+    rise($('s6line'), t, 20.0, .5, 50);
+    rise($('s6cta'), t, 20.5, .4, 20);
+    rise($('s6fine'), t, 20.9, .4, 16);
+    const press = prog(t, 21.5, .12) * (1 - prog(t, 21.62, .2));
+    const bx = prog(t, 20.5, .45);
+    $('s6btn').style.opacity = clamp(bx * 2.5);
+    $('s6btn').style.transform = `scale(${lerp(.8, 1, back(bx)) * (1 - press * .05)})`;
+    $('s6btn').style.background = press > 0 ? '#C04D2B' : '#E7623D';
+  }
+}
+window.render = render;
+window.DURATION = 23.0;
+</script>
+</body>
+</html>
